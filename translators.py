@@ -6,6 +6,7 @@ import requests
 import anthropic
 import google.generativeai as genai
 from openai import OpenAI
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,12 @@ class DeepseekTranslator(BaseTranslator):
                     "max_tokens": 2000
                 }
 
-            response = requests.post(endpoint, headers=self.headers, json=data)
+            # 增加编码参数，确保UTF-8编码正确
+            json_data = json.dumps(data, ensure_ascii=False).encode('utf-8')
+            headers = self.headers.copy()
+            headers["Content-Type"] = "application/json; charset=utf-8"
+            
+            response = requests.post(endpoint, headers=headers, data=json_data)
             response.raise_for_status()
             result = response.json()
             

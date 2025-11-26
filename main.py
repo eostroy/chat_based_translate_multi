@@ -277,14 +277,387 @@ async def interactive_translate():
         logger.error(traceback.format_exc())
         return jsonify({'error': f'翻译失败: {str(e)}'}), 500
 
+@app.route('/review', methods=['POST'])
+async def ai_review():
+    """AI译审接口，支持三种模式：单模型、双模型对比、模型开会"""
+    try:
+        data = request.get_json()
+
+        if not data:
+            return jsonify({'error': '未提供数据'}), 400
+
+        mode = data.get('mode', 'single')
+        source_text = data.get('source_text', '')
+        target_text = data.get('target_text', '')
+        source_lang = data.get('source_lang', '英文')
+        target_lang = data.get('target_lang', '中文')
+
+        if not source_text or not target_text:
+            return jsonify({'error': '原文和译文不能为空'}), 400
+
+        logger.info(f"AI译审请求: 模式: {mode}, 源语言: {source_lang}, 目标语言: {target_lang}")
+
+        if mode == 'single':
+            return await perform_single_review(data, source_text, target_text, source_lang, target_lang)
+        elif mode == 'dual':
+            return await perform_dual_review(data, source_text, target_text, source_lang, target_lang)
+        elif mode == 'meeting':
+            return await perform_meeting_review(data, source_text, target_text, source_lang, target_lang)
+        else:
+            return jsonify({'error': f'不支持的模式: {mode}'}), 400
+
+    except Exception as e:
+        logger.error(f"AI译审时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'error': f'译审失败: {str(e)}'}), 500
+
+async def perform_single_review(data, source_text, target_text, source_lang, target_lang):
+    """单模型译审"""
+    try:
+        config = data.get('config', {})
+        api_type = config.get('api_type', 'deepseek')
+        api_key = config.get('api_key', '')
+        model = config.get('model', '')
+
+        if not api_key or not model:
+            return jsonify({'error': 'API密钥和模型不能为空'}), 400
+
+        translator = create_translator(api_type, api_key)
+
+        # 构建译审提示词
+        review_prompt = f"""请对以下翻译质量进行专业评估：
+
+原文（{source_lang}）：
+{source_text}
+
+译文（{target_lang}）：
+{target_text}
+
+请从以下几个方面进行评估：
+1. 准确性：译文是否准确传达了原文的意思
+2. 流畅度：译文是否自然流畅，符合目标语言习惯
+3. 术语使用：专业术语是否翻译准确
+4. 文化适应性：是否考虑了文化差异
+5. 完整性：是否有遗漏或增添的内容
+
+请给出评分（0-100分）和详细的评估意见，并提供改进建议。
+
+请按以下格式输出：
+评分：[分数]
+评估：[详细评估内容]
+建议：[改进建议]"""
+
+        response = translator.translate(
+            review_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=model,
+            temperature=0.3
+        )
+
+        if not response:
+            return jsonify({'error': '译审失败'}), 500
+
+        # 解析响应
+        score = 'N/A'
+        review = response
+        suggestions = ''
+
+        if '评分：' in response or '评分:' in response:
+            parts = response.split('\n')
+            for i, part in enumerate(parts):
+                if '评分' in part:
+                    score = part.split('：')[-1].split(':')[-1].strip()
+                elif '评估' in part:
+                    review_start = i
+                    for j in range(review_start + 1, len(parts)):
+                        if '建议' in parts[j]:
+                            review = '\n'.join(parts[review_start+1:j])
+                            suggestions = '\n'.join(parts[j+1:])
+                            break
+
+        return jsonify({
+            'success': True,
+            'score': score,
+            'review': review if review else response,
+            'suggestions': suggestions
+        })
+
+    except Exception as e:
+        logger.error(f"单模型译审失败: {str(e)}")
+        return jsonify({'error': f'译审失败: {str(e)}'}), 500
+
+async def perform_dual_review(data, source_text, target_text, source_lang, target_lang):
+    """双模型对比译审"""
+    try:
+        config1 = data.get('config1', {})
+        config2 = data.get('config2', {})
+
+        # 并发调用两个模型
+        tasks = []
+
+        # 模型1
+        translator1 = create_translator(config1.get('api_type', 'deepseek'), config1.get('api_key', ''))
+        review_prompt = f"""请对以下翻译质量进行专业评估：
+
+原文（{source_lang}）：
+{source_text}
+
+译文（{target_lang}）：
+{target_text}
+
+请从以下几个方面进行评估：
+1. 准确性：译文是否准确传达了原文的意思
+2. 流畅度：译文是否自然流畅，符合目标语言习惯
+3. 术语使用：专业术语是否翻译准确
+4. 文化适应性：是否考虑了文化差异
+5. 完整性：是否有遗漏或增添的内容
+
+请给出评分（0-100分）和详细的评估意见，并提供改进建议。
+
+请按以下格式输出：
+评分：[分数]
+评估：[详细评估内容]
+建议：[改进建议]"""
+
+        response1 = translator1.translate(
+            review_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=config1.get('model', ''),
+            temperature=0.3
+        )
+
+        # 模型2
+        translator2 = create_translator(config2.get('api_type', 'deepseek'), config2.get('api_key', ''))
+        response2 = translator2.translate(
+            review_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=config2.get('model', ''),
+            temperature=0.3
+        )
+
+        if not response1 or not response2:
+            return jsonify({'error': '译审失败'}), 500
+
+        # 解析两个模型的响应
+        def parse_review(response):
+            score = 'N/A'
+            review = response
+            suggestions = ''
+
+            if '评分：' in response or '评分:' in response:
+                parts = response.split('\n')
+                for i, part in enumerate(parts):
+                    if '评分' in part:
+                        score = part.split('：')[-1].split(':')[-1].strip()
+                    elif '评估' in part:
+                        review_start = i
+                        for j in range(review_start + 1, len(parts)):
+                            if '建议' in parts[j]:
+                                review = '\n'.join(parts[review_start+1:j])
+                                suggestions = '\n'.join(parts[j+1:])
+                                break
+
+            return {
+                'score': score,
+                'review': review if review else response,
+                'suggestions': suggestions
+            }
+
+        review1 = parse_review(response1)
+        review2 = parse_review(response2)
+
+        # 对比分析
+        comparison_prompt = f"""你需要对两个AI模型的译审结果进行对比分析：
+
+模型1的评估：
+{response1}
+
+模型2的评估：
+{response2}
+
+请分析：
+1. 两个模型的评估有哪些共同点？
+2. 两个模型的评估有哪些不同之处？
+3. 哪个模型的评估更全面、更准确？
+4. 综合两个模型的意见，给出最终建议。"""
+
+        comparison = translator1.translate(
+            comparison_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=config1.get('model', ''),
+            temperature=0.5
+        )
+
+        return jsonify({
+            'success': True,
+            'review1': review1,
+            'review2': review2,
+            'comparison': comparison
+        })
+
+    except Exception as e:
+        logger.error(f"双模型对比译审失败: {str(e)}")
+        return jsonify({'error': f'译审失败: {str(e)}'}), 500
+
+async def perform_meeting_review(data, source_text, target_text, source_lang, target_lang):
+    """模型开会译审 - 多专家民主表决"""
+    try:
+        experts = data.get('experts', [])
+
+        if len(experts) < 3:
+            return jsonify({'error': '模型开会模式至少需要3个专家'}), 400
+
+        # 收集每个专家的意见
+        opinions = []
+
+        for expert in experts:
+            role = expert.get('role', '专家')
+            config = expert.get('config', {})
+            icon = expert.get('icon', 'fa-user')
+
+            api_type = config.get('api_type', 'deepseek')
+            api_key = config.get('api_key', '')
+            model = config.get('model', '')
+
+            if not api_key or not model:
+                continue
+
+            translator = create_translator(api_type, api_key)
+
+            # 根据专家角色构建专门的提示词
+            role_prompts = {
+                '术语专家': '请以术语专家的身份，重点评估专业术语的翻译准确性和一致性。',
+                '流畅度专家': '请以流畅度专家的身份，重点评估译文的自然度和可读性。',
+                '文化适应性专家': '请以文化适应性专家的身份，重点评估译文是否考虑了文化差异和本地化需求。',
+                '准确性专家': '请以准确性专家的身份，重点评估译文是否完整准确地传达了原文的意思。',
+                '风格专家': '请以风格专家的身份，重点评估译文的写作风格和语言风格是否恰当。',
+                '语法专家': '请以语法专家的身份，重点评估译文的语法正确性和语言规范性。'
+            }
+
+            role_instruction = role_prompts.get(role, f'请以{role}的身份进行评估。')
+
+            expert_prompt = f"""{role_instruction}
+
+原文（{source_lang}）：
+{source_text}
+
+译文（{target_lang}）：
+{target_text}
+
+请从你的专业角度给出评分（0-100分）和详细意见。"""
+
+            response = translator.translate(
+                expert_prompt,
+                source_lang='中文',
+                target_lang='中文',
+                model=model,
+                temperature=0.4
+            )
+
+            if response:
+                opinions.append({
+                    'role': role,
+                    'icon': icon,
+                    'opinion': response
+                })
+
+            # 防止API速率限制
+            await asyncio.sleep(1)
+
+        if len(opinions) == 0:
+            return jsonify({'error': '所有专家评审均失败'}), 500
+
+        # 民主表决 - 综合所有专家意见
+        consensus_prompt = f"""你是译审会议的主持人。以下是{len(opinions)}位专家的评审意见：
+
+"""
+        for i, opinion in enumerate(opinions, 1):
+            consensus_prompt += f"\n【{opinion['role']}】的意见：\n{opinion['opinion']}\n"
+
+        consensus_prompt += f"""
+
+请你作为主持人：
+1. 总结各位专家的共识
+2. 指出专家们的分歧点
+3. 综合所有意见，给出最终评分（0-100分）
+4. 提供最终的改进建议
+
+这是一个民主表决的过程，请综合多数专家的意见，给出公正客观的最终结论。"""
+
+        # 使用第一个专家的配置来生成最终共识
+        first_expert_config = experts[0].get('config', {})
+        final_translator = create_translator(
+            first_expert_config.get('api_type', 'deepseek'),
+            first_expert_config.get('api_key', '')
+        )
+
+        consensus = final_translator.translate(
+            consensus_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=first_expert_config.get('model', ''),
+            temperature=0.3
+        )
+
+        # 提取最终评分
+        final_score = 'N/A'
+        if consensus and ('评分' in consensus or '分数' in consensus):
+            import re
+            score_match = re.search(r'(\d+)分', consensus)
+            if score_match:
+                final_score = score_match.group(1)
+
+        return jsonify({
+            'success': True,
+            'opinions': opinions,
+            'consensus': consensus,
+            'final_score': final_score
+        })
+
+    except Exception as e:
+        logger.error(f"模型开会译审失败: {str(e)}")
+        return jsonify({'error': f'译审失败: {str(e)}'}), 500
+
 if __name__ == '__main__':
-    logger.info("翻译应用程序启动")
-    # 使用hypercorn作为ASGI服务器
-    import hypercorn.asyncio
-    import hypercorn.config
-    
-    config = hypercorn.config.Config()
-    config.bind = ["0.0.0.0:5000"]
-    config.use_reloader = True
-    
-    asyncio.run(hypercorn.asyncio.serve(app, config)) 
+    import sys
+
+    logger.info("=" * 60)
+    logger.info("ATP: AI-driven Translation Platform 启动中...")
+    logger.info("=" * 60)
+
+    # 检查是否使用开发模式
+    dev_mode = '--dev' in sys.argv or True  # 默认开发模式
+
+    if dev_mode:
+        logger.info("🚀 开发模式：启用热重载和自动刷新")
+        logger.info("📝 修改代码后会自动重启，无需手动重启！")
+        logger.info("🌐 访问地址: http://localhost:5000")
+        logger.info("=" * 60)
+
+        # 使用 Flask 内置开发服务器（支持异步）
+        # Flask 2.3+ 原生支持异步视图
+        app.run(
+            host='0.0.0.0',
+            port=5000,
+            debug=True,  # 开启调试模式，自动重载
+            use_reloader=True,  # 启用重载器
+            threaded=True,  # 使用线程模式处理请求
+        )
+    else:
+        logger.info("🚀 生产模式：使用 Hypercorn ASGI 服务器")
+        logger.info("🌐 访问地址: http://localhost:5000")
+        logger.info("=" * 60)
+
+        # 生产环境使用 hypercorn
+        import hypercorn.asyncio
+        import hypercorn.config
+
+        config = hypercorn.config.Config()
+        config.bind = ["0.0.0.0:5000"]
+        config.workers = 2  # 使用多进程
+
+        asyncio.run(hypercorn.asyncio.serve(app, config)) 

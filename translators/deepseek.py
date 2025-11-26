@@ -47,7 +47,12 @@ class DeepseekTranslator(BaseTranslator):
                 "presence_penalty": 0.0
             }
             
-            response = requests.post(self.api_url, headers=self.headers, data=json.dumps(payload))
+            json_data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
+            
+            headers = self.headers.copy()
+            headers["Content-Type"] = "application/json; charset=utf-8"
+            
+            response = requests.post(self.api_url, headers=headers, data=json_data)
             
             if response.status_code == 200:
                 result = response.json()

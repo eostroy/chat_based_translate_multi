@@ -17,26 +17,11 @@ class DeepseekTranslator:
     
     def translate(self, text, source_lang="英文", target_lang="中文", model="deepseek-chat", 
                  system_prompt=None, user_prompt=None):
-        """
-        使用Deepseek API翻译文本
         
-        参数:
-            text: 要翻译的文本
-            source_lang: 源语言
-            target_lang: 目标语言
-            model: 使用的模型
-            system_prompt: 自定义系统提示词
-            user_prompt: 自定义用户提示词
-        
-        返回:
-            翻译后的文本
-        """
         try:
-            # 使用自定义提示词或默认提示词
             system_prompt = system_prompt or self.default_system_prompt
             user_prompt = user_prompt or self.default_user_prompt
             
-            # 替换提示词中的占位符
             system_prompt = system_prompt.format(
                 source_lang=source_lang,
                 target_lang=target_lang
@@ -51,32 +36,37 @@ class DeepseekTranslator:
                 {"role": "user", "content": user_prompt}
             ]
             
-            # 计算文本长度，用于调整max_tokens
             text_length = len(text)
             max_tokens = min(4000, text_length * 2)
             
             payload = {
                 "model": model,
                 "messages": messages,
-                "temperature": 1.0,  # 降低温度以获得更稳定的翻译结果
+                "temperature": 1.0,
                 "max_tokens": max_tokens,
                 "top_p": 0.95,
                 "frequency_penalty": 0.0,
                 "presence_penalty": 0.0
             }
             
-            response = requests.post(self.api_url, headers=self.headers, data=json.dumps(payload))
+            # 增加编码参数，确保UTF-8编码正确
+            json_data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
+            
+            # 同时明确指定Content-Type包含charset=utf-8
+            headers = self.headers.copy()
+            headers["Content-Type"] = "application/json; charset=utf-8"
+            
+            response = requests.post(self.api_url, headers=headers, data=json_data)
             
             if response.status_code == 200:
                 result = response.json()
                 translated_text = result["choices"][0]["message"]["content"]
                 
-                # 检查翻译结果是否完整
                 if self._is_translation_complete(text, translated_text):
                     return translated_text
                 else:
                     print("警告：翻译结果可能不完整，将重试...")
-                    time.sleep(2)  # 等待后重试
+                    time.sleep(2)
                     return self.translate(text, source_lang, target_lang, model, 
                                         system_prompt, user_prompt)
                     

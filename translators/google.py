@@ -44,10 +44,15 @@ class GoogleTranslator(BaseTranslator):
                 }
             }
             
+            json_data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
+            
+            headers = self.headers.copy()
+            headers["Content-Type"] = "application/json; charset=utf-8"
+            
             response = requests.post(
                 f"{self.api_url}?key={self.api_key}",
-                headers=self.headers,
-                data=json.dumps(payload)
+                headers=headers,
+                data=json_data
             )
             
             if response.status_code == 200:

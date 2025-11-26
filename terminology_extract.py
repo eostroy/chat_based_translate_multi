@@ -7,7 +7,7 @@ client = OpenAI(
 
 def terminology_extract(text):
     
-    prompt = f"请提取文本中的经济术语：{text}"
+    prompt = f"请提取文本中的地理术语：{text}"
 
     messages = [
         {"role": "system", "content": "你是一个术语专家，擅长识别文本中的专业术语。"},
@@ -23,6 +23,6 @@ def terminology_extract(text):
     
     print(result)
 
-with open (r"C:\Users\15332\Desktop\text_process\chapter1.txt", 'r', encoding="utf-8") as f:
+with open (r"file_path", 'r', encoding="utf-8") as f:
     text = f.read()
     terminology_extract(text)
