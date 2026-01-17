@@ -1,5 +1,5 @@
-import json
 import logging
+import os
 from typing import Optional
 
 import requests
@@ -28,6 +28,19 @@ class OpenRouterTranslator(BaseTranslator):
     def __init__(self, api_key: str):
         super().__init__(api_key)
         self.base_url = "https://openrouter.ai/api/v1"
+        self.site_url = os.getenv("OPENROUTER_SITE_URL") or os.getenv("OPENROUTER_REFERRER")
+        self.app_title = os.getenv("OPENROUTER_APP_NAME", "ATP")
+
+    def _build_headers(self) -> dict:
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        if self.site_url:
+            headers["HTTP-Referer"] = self.site_url
+        if self.app_title:
+            headers["X-Title"] = self.app_title
+        return headers
 
     def translate(
         self,
@@ -40,6 +53,9 @@ class OpenRouterTranslator(BaseTranslator):
         temperature: float = 1.0,
     ) -> Optional[str]:
         try:
+            if not self.api_key:
+                raise ValueError("OpenRouter API密钥不能为空")
+
             if not model:
                 raise ValueError("模型名称不能为空")
 
@@ -65,15 +81,10 @@ class OpenRouterTranslator(BaseTranslator):
                 "max_tokens": 2000,
             }
 
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-            }
-
             response = requests.post(
                 f"{self.base_url}/chat/completions",
-                headers=headers,
-                data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                headers=self._build_headers(),
+                json=payload,
                 timeout=60,
             )
             response.raise_for_status()
@@ -83,6 +94,11 @@ class OpenRouterTranslator(BaseTranslator):
                 return result["choices"][0]["message"]["content"].strip()
 
             logger.error("OpenRouter 返回结果格式错误: %s", result)
+            return None
+        except requests.HTTPError as exc:
+            status = exc.response.status_code if exc.response else "unknown"
+            detail = exc.response.text if exc.response else "no response body"
+            logger.error("OpenRouter 翻译出错: HTTP %s - %s", status, detail)
             return None
         except Exception as exc:
             logger.error("OpenRouter 翻译出错: %s", exc)
