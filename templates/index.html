@@ -1932,19 +1932,24 @@
 
     <script>
         // 页面加载完成后显示入口选择，隐藏加载动画
-        window.addEventListener('load', function() {
+        const startEntryIntro = () => {
+            const loader = document.getElementById('loader');
+            const entryContainer = document.getElementById('entryContainer');
+            if (!loader || !entryContainer || entryContainer.dataset.ready === 'true') {
+                return;
+            }
+
+            entryContainer.dataset.ready = 'true';
+
             // 设置问候语动画
             const greetings = document.querySelectorAll('.greeting');
             const animationDuration = 3000; // 增加总时长使动画更流畅
-            const segmentDuration = animationDuration / greetings.length;
+            const segmentDuration = greetings.length ? animationDuration / greetings.length : animationDuration;
             
             greetings.forEach((greeting, index) => {
                 greeting.style.animation = `greetingAnimation ${segmentDuration}ms cubic-bezier(0.4, 0, 0.2, 1) forwards`;
                 greeting.style.animationDelay = `${index * segmentDuration}ms`;
             });
-            
-            const loader = document.getElementById('loader');
-            const entryContainer = document.getElementById('entryContainer');
             
             // 延迟显示入口选择，让动画完整播放
             setTimeout(() => {
@@ -1970,7 +1975,10 @@
                     });
                 }, 800);
             }, 3000);
-        });
+        };
+
+        document.addEventListener('DOMContentLoaded', startEntryIntro);
+        window.addEventListener('load', startEntryIntro);
 
         // 入口选择处理
         const entryCards = document.querySelectorAll('.entry-card');
