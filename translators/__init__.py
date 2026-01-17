@@ -2,13 +2,14 @@ from .deepseek import DeepseekTranslator
 from .openai import OpenAITranslator
 from .anthropic import AnthropicTranslator
 from .google import GoogleTranslator
+from .openrouter import OpenRouterTranslator
 
 def create_translator(api_type, api_key):
     """
     根据API类型创建对应的翻译器实例
     
     参数:
-        api_type: API类型（deepseek/openai/anthropic/google）
+        api_type: API类型（deepseek/openai/anthropic/google/openrouter）
         api_key: API密钥
     
     返回:
@@ -18,7 +19,8 @@ def create_translator(api_type, api_key):
         'deepseek': DeepseekTranslator,
         'openai': OpenAITranslator,
         'anthropic': AnthropicTranslator,
-        'google': GoogleTranslator
+        'google': GoogleTranslator,
+        'openrouter': OpenRouterTranslator,
     }
     
     if api_type not in translators:
