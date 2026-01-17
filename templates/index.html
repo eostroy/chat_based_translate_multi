@@ -1756,63 +1756,6 @@
                 <div class="two-stage-grid">
                     <div class="stage-card">
                         <div class="stage-badge"><i class="fas fa-bolt"></i> 初筛扫描（快速模型）</div>
-                        <div class="form-group">
-                            <label>API密钥</label>
-                            <input type="password" id="review_scan_api_key" placeholder="sk-...">
-                        </div>
-                        <div class="form-group">
-                            <label>模型名称（OpenRouter）</label>
-                            <input type="text" id="review_scan_model" placeholder="例如：openai/gpt-4o">
-                        </div>
-                    </div>
-                    <div class="stage-card">
-                        <div class="stage-badge"><i class="fas fa-brain"></i> 深度校准（推理模型）</div>
-                        <div class="form-group">
-                            <label>API密钥</label>
-                            <input type="password" id="review_calibration_api_key" placeholder="sk-...">
-                        </div>
-                        <div class="form-group">
-                            <label>模型名称（OpenRouter）</label>
-                            <input type="text" id="review_calibration_model" placeholder="例如：openai/gpt-4o">
-                        </div>
-                    </div>
-                </div>
-                <div class="prompt-engineering-card">
-                    <div class="config-section-title"><i class="fas fa-wand-magic-sparkles"></i> 动态提示词工程</div>
-                    <div class="config-row">
-                        <div class="form-group select-wrapper">
-                            <label>体裁类型</label>
-                            <select id="review_genre">
-                                <option value="通用">通用</option>
-                                <option value="法律">法律</option>
-                                <option value="医学">医学</option>
-                                <option value="文学">文学</option>
-                                <option value="科技">科技</option>
-                                <option value="市场营销">市场营销</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>人类关注点（可选）</label>
-                            <input type="text" id="review_human_notes" placeholder="例如：重点关注术语一致性/法规引用">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Few-shot 示例（可编辑）</label>
-                        <textarea id="review_few_shot" rows="6" placeholder="这里会根据体裁自动注入Few-shot示例"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>结构化JSON输出预览</label>
-                        <div class="prompt-preview" id="review_prompt_preview"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 双阶段配置 -->
-            <div class="review-config-area" id="twoStageReviewConfig" style="display: none;">
-                <h3 class="config-section-title"><i class="fas fa-layer-group"></i> 双阶段推理与人机协同配置</h3>
-                <div class="two-stage-grid">
-                    <div class="stage-card">
-                        <div class="stage-badge"><i class="fas fa-bolt"></i> 初筛扫描（快速模型）</div>
                         <div class="form-group select-wrapper">
                             <label>选择API</label>
                             <select id="review_scan_api_type">
@@ -2484,35 +2427,6 @@
                     updateModelOptions(this.value, reviewCalibrationModel);
                 });
                 updateModelOptions('deepseek', reviewCalibrationModel);
-            }
-
-            const genreSelect = document.getElementById('review_genre');
-            const fewShotTextarea = document.getElementById('review_few_shot');
-            const promptPreview = document.getElementById('review_prompt_preview');
-            const fewShotTemplates = {
-                '通用': `示例1：{"error_text":"译文片段","index":12,"category":"accuracy","suggestion":"更正译法","reason":"语义偏差"}\n示例2：{"error_text":"术语A","index":45,"category":"terminology","suggestion":"统一译为术语B","reason":"术语不一致"}`,
-                '法律': `示例1：{"error_text":"shall be liable","index":32,"category":"accuracy","suggestion":"应承担责任","reason":"法律责任义务误译"}\n示例2：{"error_text":"party A","index":58,"category":"terminology","suggestion":"甲方","reason":"法律主体称谓不统一"}`,
-                '医学': `示例1：{"error_text":"dosage","index":20,"category":"terminology","suggestion":"剂量","reason":"医学术语误译"}\n示例2：{"error_text":"adverse event","index":71,"category":"accuracy","suggestion":"不良事件","reason":"专业语义偏差"}`,
-                '文学': `示例1：{"error_text":"moonlight","index":15,"category":"style","suggestion":"月光","reason":"意象表达不够诗性"}\n示例2：{"error_text":"he whispered","index":49,"category":"fluency","suggestion":"他低声呢喃","reason":"节奏不够自然"}`,
-                '科技': `示例1：{"error_text":"throughput","index":27,"category":"terminology","suggestion":"吞吐量","reason":"技术术语规范性"}\n示例2：{"error_text":"latency","index":64,"category":"accuracy","suggestion":"延迟","reason":"指标表达不准确"}`,
-                '市场营销': `示例1：{"error_text":"value proposition","index":19,"category":"terminology","suggestion":"价值主张","reason":"营销术语不一致"}\n示例2：{"error_text":"call to action","index":88,"category":"style","suggestion":"行动号召","reason":"营销语气不够明确"}`
-            };
-
-            function updatePromptPreview() {
-                if (!promptPreview) return;
-                const genre = genreSelect ? genreSelect.value : '通用';
-                const fewShotContent = fewShotTextarea ? fewShotTextarea.value.trim() : '';
-                promptPreview.textContent = `体裁：${genre}\n\nJSON输出结构预览：\n{\n  "summary": "...",\n  "errors": [\n    {\n      "error_text": "...",\n      "index": 0,\n      "category": "accuracy/fluency/terminology/style/logic/consistency/omission/addition",\n      "suggestion": "...",\n      "reason": "..."\n    }\n  ],\n  "consistency_notes": "...",\n  "final_suggestion": "..."\n}\n\nFew-shot 示例：\n${fewShotContent || '（将使用默认模板）'}`;
-            }
-
-            if (genreSelect && fewShotTextarea) {
-                fewShotTextarea.value = fewShotTemplates[genreSelect.value] || fewShotTemplates['通用'];
-                updatePromptPreview();
-                genreSelect.addEventListener('change', function() {
-                    fewShotTextarea.value = fewShotTemplates[this.value] || fewShotTemplates['通用'];
-                    updatePromptPreview();
-                });
-                fewShotTextarea.addEventListener('input', updatePromptPreview);
             }
 
             // 添加专家
