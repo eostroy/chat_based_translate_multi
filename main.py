@@ -301,6 +301,8 @@ async def ai_review():
             return await perform_single_review(data, source_text, target_text, source_lang, target_lang)
         elif mode == 'dual':
             return await perform_dual_review(data, source_text, target_text, source_lang, target_lang)
+        elif mode == 'two-stage':
+            return await perform_two_stage_review(data, source_text, target_text, source_lang, target_lang)
         elif mode == 'meeting':
             return await perform_meeting_review(data, source_text, target_text, source_lang, target_lang)
         else:
@@ -501,6 +503,117 @@ async def perform_dual_review(data, source_text, target_text, source_lang, targe
 
     except Exception as e:
         logger.error(f"双模型对比译审失败: {str(e)}")
+        return jsonify({'error': f'译审失败: {str(e)}'}), 500
+
+async def perform_two_stage_review(data, source_text, target_text, source_lang, target_lang):
+    """双阶段推理与人机协同译审"""
+    try:
+        scan_config = data.get('scan_config', {})
+        calibration_config = data.get('calibration_config', {})
+
+        genre = data.get('genre', '通用')
+        few_shot = data.get('few_shot', '')
+        human_notes = data.get('human_notes', '')
+
+        if not scan_config.get('api_key') or not scan_config.get('model'):
+            return jsonify({'error': '初筛扫描的API密钥和模型不能为空'}), 400
+
+        if not calibration_config.get('api_key') or not calibration_config.get('model'):
+            return jsonify({'error': '深度校准的API密钥和模型不能为空'}), 400
+
+        logger.info("双阶段译审启动: 初筛扫描 -> 深度校准")
+        logger.info(f"体裁: {genre}")
+
+        scan_translator = create_translator(
+            scan_config.get('api_type', 'deepseek'),
+            scan_config.get('api_key', '')
+        )
+
+        scan_prompt = f"""你是译文质量初筛扫描器，请快速识别译文中的显性错误片段。
+只需标注明显的问题（如漏译、错译、术语误用、语法错误、数字/时间/专名错误）。
+请输出标准化JSON数组，每一项必须包含：
+- error_text: 译文中的错误片段原文
+- index: 错误在译文中的起始索引（从0开始）
+- category: 错误类别（accuracy/fluency/terminology/style/logic/consistency/omission/addition）
+- suggestion: 修正建议
+
+原文（{source_lang}）：
+{source_text}
+
+译文（{target_lang}）：
+{target_text}
+
+只输出JSON数组，不要输出其他文字。"""
+
+        scan_output = scan_translator.translate(
+            scan_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=scan_config.get('model', ''),
+            temperature=0.2
+        )
+
+        calibration_translator = create_translator(
+            calibration_config.get('api_type', 'deepseek'),
+            calibration_config.get('api_key', '')
+        )
+
+        calibration_prompt = f"""你是强推理译审专家，请结合初筛扫描结果进行深度校准。
+目标：解决逻辑疑点、篇章一致性问题，并输出可追溯的结构化JSON。
+
+体裁：{genre}
+人类关注点（可选）：{human_notes or '无'}
+
+初筛扫描结果（JSON数组）：
+{scan_output}
+
+Few-shot 示例（如果有）： 
+{few_shot or '无'}
+
+原文（{source_lang}）：
+{source_text}
+
+译文（{target_lang}）：
+{target_text}
+
+输出要求（只输出JSON对象）：
+{{
+  "summary": "整体结论与质量概述",
+  "errors": [
+    {{
+      "error_text": "译文错误片段",
+      "index": 0,
+      "category": "accuracy/fluency/terminology/style/logic/consistency/omission/addition",
+      "suggestion": "修正建议",
+      "reason": "判定原因"
+    }}
+  ],
+  "consistency_notes": "跨段落一致性/逻辑链条的说明",
+  "final_suggestion": "最终改进建议"
+}}
+
+请确保JSON合法，不包含额外解释性文本。"""
+
+        calibration_output = calibration_translator.translate(
+            calibration_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=calibration_config.get('model', ''),
+            temperature=0.3
+        )
+
+        if not scan_output or not calibration_output:
+            return jsonify({'error': '双阶段译审失败'}), 500
+
+        return jsonify({
+            'success': True,
+            'genre': genre,
+            'scan_output': scan_output,
+            'calibration_output': calibration_output
+        })
+
+    except Exception as e:
+        logger.error(f"双阶段译审失败: {str(e)}")
         return jsonify({'error': f'译审失败: {str(e)}'}), 500
 
 async def perform_meeting_review(data, source_text, target_text, source_lang, target_lang):
