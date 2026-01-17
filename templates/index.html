@@ -1041,6 +1041,61 @@
             margin-bottom: 20px;
         }
 
+        .two-stage-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .stage-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .stage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 163, 127, 0.12);
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .prompt-engineering-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .prompt-preview {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .json-output {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
         .config-section-title {
             font-size: 1rem;
             font-weight: 600;
@@ -1357,29 +1412,13 @@
                 <!-- 单模型配置 -->
                 <div class="single-model-config" id="singleModelConfig">
                     <div class="config-row">
-                        <div class="form-group select-wrapper">
-                            <label><i class="fas fa-network-wired"></i> 选择API</label>
-                            <select id="single_api_type" required>
-                                <option value="deepseek">Deepseek</option>
-                                <option value="openai">OpenAI</option>
-                                <option value="anthropic">Anthropic</option>
-                                <option value="google">Google</option>
-                            </select>
-                        </div>
                         <div class="form-group">
                             <label><i class="fas fa-key"></i> API密钥</label>
                             <input type="password" id="single_api_key" required placeholder="sk-...">
                         </div>
-                        <div class="form-group select-wrapper">
-                            <label><i class="fas fa-robot"></i> 选择模型</label>
-                            <select id="single_model" required>
-                                <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
-                                <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
-                                <option value="gpt-4o" data-api="openai">GPT-4</option>
-                                <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
-                                <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
-                                <option value="gemini-pro" data-api="google">Gemini Pro</option>
-                            </select>
+                        <div class="form-group">
+                            <label><i class="fas fa-robot"></i> 模型名称（OpenRouter）</label>
+                            <input type="text" id="single_model" required placeholder="例如：openai/gpt-4o">
                         </div>
                     </div>
                     <div class="config-row">
@@ -1500,31 +1539,14 @@
                         <input type="file" id="file1" name="file" accept=".txt,.doc,.docx" required>
                     </div>
                     
-                    <div class="form-group select-wrapper">
-                        <label>选择API</label>
-                        <select id="api_type1" name="api_type" required>
-                            <option value="deepseek">Deepseek</option>
-                            <option value="openai">OpenAI</option>
-                            <option value="anthropic">Anthropic</option>
-                            <option value="google">Google</option>
-                        </select>
-                    </div>
-                    
                     <div class="form-group">
                         <label>API密钥</label>
                         <input type="password" id="api_key1" name="api_key" required placeholder="输入您的 API Key">
                     </div>
                     
-                    <div class="form-group select-wrapper">
-                        <label>选择模型</label>
-                        <select id="model1" name="model" required>
-                            <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
-                            <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
-                            <option value="gpt-4o" data-api="openai">GPT-4</option>
-                            <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
-                            <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
-                            <option value="gemini-pro" data-api="google">Gemini Pro</option>
-                        </select>
+                    <div class="form-group">
+                        <label>模型名称（OpenRouter）</label>
+                        <input type="text" id="model1" name="model" required placeholder="例如：openai/gpt-4o">
                     </div>
                     
                     <div class="form-group">
@@ -1576,29 +1598,13 @@
                         <label for="file2">上传文档 (.txt, .doc, .docx)</label>
                         <input type="file" id="file2" name="file" accept=".txt,.doc,.docx" required>
                     </div>
-                    <div class="form-group select-wrapper">
-                        <label>选择API</label>
-                        <select id="api_type2" name="api_type" required>
-                            <option value="deepseek">Deepseek</option>
-                            <option value="openai">OpenAI</option>
-                            <option value="anthropic">Anthropic</option>
-                            <option value="google">Google</option>
-                        </select>
-                    </div>
                     <div class="form-group">
                         <label>API密钥</label>
                         <input type="password" id="api_key2" name="api_key" required placeholder="输入您的 API Key">
                     </div>
-                    <div class="form-group select-wrapper">
-                        <label>选择模型</label>
-                        <select id="model2" name="model" required>
-                            <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
-                            <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
-                            <option value="gpt-4o" data-api="openai">GPT-4</option>
-                            <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
-                            <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
-                            <option value="gemini-pro" data-api="google">Gemini Pro</option>
-                        </select>
+                    <div class="form-group">
+                        <label>模型名称（OpenRouter）</label>
+                        <input type="text" id="model2" name="model" required placeholder="例如：openai/gpt-4o">
                     </div>
                     <div class="form-group">
                         <label>温度: <span id="temperature-value2">1.0</span></label>
@@ -1653,6 +1659,9 @@
                     <button class="mode-btn" data-review-mode="dual">
                         <i class="fas fa-user-friends"></i> 双模型对比
                     </button>
+                    <button class="mode-btn" data-review-mode="two-stage">
+                        <i class="fas fa-layer-group"></i> 双阶段协同
+                    </button>
                     <button class="mode-btn" data-review-mode="meeting">
                         <i class="fas fa-users"></i> 模型开会
                     </button>
@@ -1695,29 +1704,13 @@
             <div class="review-config-area" id="singleReviewConfig">
                 <h3 class="config-section-title"><i class="fas fa-cog"></i> 模型配置</h3>
                 <div class="config-row">
-                    <div class="form-group select-wrapper">
-                        <label><i class="fas fa-network-wired"></i> 选择API</label>
-                        <select id="review_single_api_type">
-                            <option value="deepseek">Deepseek</option>
-                            <option value="openai">OpenAI</option>
-                            <option value="anthropic">Anthropic</option>
-                            <option value="google">Google</option>
-                        </select>
-                    </div>
                     <div class="form-group">
                         <label><i class="fas fa-key"></i> API密钥</label>
                         <input type="password" id="review_single_api_key" placeholder="sk-...">
                     </div>
-                    <div class="form-group select-wrapper">
-                        <label><i class="fas fa-robot"></i> 选择模型</label>
-                        <select id="review_single_model">
-                            <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
-                            <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
-                            <option value="gpt-4o" data-api="openai">GPT-4</option>
-                            <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
-                            <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
-                            <option value="gemini-pro" data-api="google">Gemini Pro</option>
-                        </select>
+                    <div class="form-group">
+                        <label><i class="fas fa-robot"></i> 模型名称（OpenRouter）</label>
+                        <input type="text" id="review_single_model" placeholder="例如：openai/gpt-4o">
                     </div>
                 </div>
             </div>
@@ -1731,29 +1724,13 @@
                         <div class="dual-model-header">
                             <i class="fas fa-robot"></i> 模型 1
                         </div>
-                        <div class="form-group select-wrapper">
-                            <label>选择API</label>
-                            <select id="review_dual_api_type1">
-                                <option value="deepseek">Deepseek</option>
-                                <option value="openai">OpenAI</option>
-                                <option value="anthropic">Anthropic</option>
-                                <option value="google">Google</option>
-                            </select>
-                        </div>
                         <div class="form-group">
                             <label>API密钥</label>
                             <input type="password" id="review_dual_api_key1" placeholder="sk-...">
                         </div>
-                        <div class="form-group select-wrapper">
-                            <label>选择模型</label>
-                            <select id="review_dual_model1">
-                                <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
-                                <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
-                                <option value="gpt-4o" data-api="openai">GPT-4</option>
-                                <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
-                                <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
-                                <option value="gemini-pro" data-api="google">Gemini Pro</option>
-                            </select>
+                        <div class="form-group">
+                            <label>模型名称（OpenRouter）</label>
+                            <input type="text" id="review_dual_model1" placeholder="例如：openai/gpt-4o">
                         </div>
                     </div>
                     <!-- 模型2 -->
@@ -1761,30 +1738,71 @@
                         <div class="dual-model-header">
                             <i class="fas fa-robot"></i> 模型 2
                         </div>
-                        <div class="form-group select-wrapper">
-                            <label>选择API</label>
-                            <select id="review_dual_api_type2">
-                                <option value="deepseek">Deepseek</option>
-                                <option value="openai">OpenAI</option>
-                                <option value="anthropic">Anthropic</option>
-                                <option value="google">Google</option>
-                            </select>
-                        </div>
                         <div class="form-group">
                             <label>API密钥</label>
                             <input type="password" id="review_dual_api_key2" placeholder="sk-...">
                         </div>
+                        <div class="form-group">
+                            <label>模型名称（OpenRouter）</label>
+                            <input type="text" id="review_dual_model2" placeholder="例如：openai/gpt-4o">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 双阶段配置 -->
+            <div class="review-config-area" id="twoStageReviewConfig" style="display: none;">
+                <h3 class="config-section-title"><i class="fas fa-layer-group"></i> 双阶段推理与人机协同配置</h3>
+                <div class="two-stage-grid">
+                    <div class="stage-card">
+                        <div class="stage-badge"><i class="fas fa-bolt"></i> 初筛扫描（快速模型）</div>
+                        <div class="form-group">
+                            <label>API密钥</label>
+                            <input type="password" id="review_scan_api_key" placeholder="sk-...">
+                        </div>
+                        <div class="form-group">
+                            <label>模型名称（OpenRouter）</label>
+                            <input type="text" id="review_scan_model" placeholder="例如：openai/gpt-4o">
+                        </div>
+                    </div>
+                    <div class="stage-card">
+                        <div class="stage-badge"><i class="fas fa-brain"></i> 深度校准（推理模型）</div>
+                        <div class="form-group">
+                            <label>API密钥</label>
+                            <input type="password" id="review_calibration_api_key" placeholder="sk-...">
+                        </div>
+                        <div class="form-group">
+                            <label>模型名称（OpenRouter）</label>
+                            <input type="text" id="review_calibration_model" placeholder="例如：openai/gpt-4o">
+                        </div>
+                    </div>
+                </div>
+                <div class="prompt-engineering-card">
+                    <div class="config-section-title"><i class="fas fa-wand-magic-sparkles"></i> 动态提示词工程</div>
+                    <div class="config-row">
                         <div class="form-group select-wrapper">
-                            <label>选择模型</label>
-                            <select id="review_dual_model2">
-                                <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
-                                <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
-                                <option value="gpt-4o" data-api="openai">GPT-4</option>
-                                <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
-                                <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
-                                <option value="gemini-pro" data-api="google">Gemini Pro</option>
+                            <label>体裁类型</label>
+                            <select id="review_genre">
+                                <option value="通用">通用</option>
+                                <option value="法律">法律</option>
+                                <option value="医学">医学</option>
+                                <option value="文学">文学</option>
+                                <option value="科技">科技</option>
+                                <option value="市场营销">市场营销</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>人类关注点（可选）</label>
+                            <input type="text" id="review_human_notes" placeholder="例如：重点关注术语一致性/法规引用">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Few-shot 示例（可编辑）</label>
+                        <textarea id="review_few_shot" rows="6" placeholder="这里会根据体裁自动注入Few-shot示例"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>结构化JSON输出预览</label>
+                        <div class="prompt-preview" id="review_prompt_preview"></div>
                     </div>
                 </div>
             </div>
@@ -1907,40 +1925,6 @@
             });
         }
 
-        // 更新模型选项的函数
-        function updateModelOptions(apiType, modelSelect) {
-            const options = modelSelect.getElementsByTagName('option');
-            let firstVisible = null;
-            
-            for (let option of options) {
-                if (option.getAttribute('data-api') === apiType) {
-                    option.style.display = '';
-                    if (!firstVisible) firstVisible = option;
-                } else {
-                    option.style.display = 'none';
-                }
-            }
-            // 只有当当前选中的选项不可见时，才切换到第一个可见选项
-            if (modelSelect.selectedOptions.length > 0 && modelSelect.selectedOptions[0].style.display === 'none') {
-                if (firstVisible) firstVisible.selected = true;
-            } else if (modelSelect.selectedIndex === -1 && firstVisible) {
-                 firstVisible.selected = true;
-            }
-        }
-
-        // 为两个区域的API选择添加事件监听器
-        document.getElementById('api_type1').addEventListener('change', function() {
-            updateModelOptions(this.value, document.getElementById('model1'));
-        });
-
-        document.getElementById('api_type2').addEventListener('change', function() {
-            updateModelOptions(this.value, document.getElementById('model2'));
-        });
-
-        // 初始化模型选项
-        updateModelOptions('deepseek', document.getElementById('model1'));
-        updateModelOptions('deepseek', document.getElementById('model2'));
-
         // 处理表单提交的函数 (保持原逻辑)
         function handleSubmit(formId, statusId, progressId, downloadSectionId) {
             const form = document.getElementById(formId);
@@ -2058,16 +2042,6 @@
                 });
             });
 
-            // 单模型API联动
-            const singleApiType = document.getElementById('single_api_type');
-            const singleModel = document.getElementById('single_model');
-            if (singleApiType && singleModel) {
-                singleApiType.addEventListener('change', function() {
-                    updateModelOptions(this.value, singleModel);
-                });
-                updateModelOptions('deepseek', singleModel);
-            }
-
             // 添加模型配置
             const addModelBtn = document.getElementById('addModelBtn');
             const modelsContainer = document.getElementById('modelsContainer');
@@ -2097,31 +2071,15 @@
                         </button>
                     </div>
                     <div class="config-row">
-                        <div class="form-group select-wrapper">
-                            <label><i class="fas fa-network-wired"></i> 选择API</label>
-                            <select id="${cardId}_api_type" required>
-                                <option value="deepseek">Deepseek</option>
-                                <option value="openai">OpenAI</option>
-                                <option value="anthropic">Anthropic</option>
-                                <option value="google">Google</option>
-                            </select>
-                        </div>
                         <div class="form-group">
                             <label><i class="fas fa-key"></i> API密钥</label>
                             <input type="password" id="${cardId}_api_key" required placeholder="sk-...">
                         </div>
                     </div>
                     <div class="config-row">
-                        <div class="form-group select-wrapper">
-                            <label><i class="fas fa-robot"></i> 选择模型</label>
-                            <select id="${cardId}_model" required>
-                                <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
-                                <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
-                                <option value="gpt-4o" data-api="openai">GPT-4</option>
-                                <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
-                                <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
-                                <option value="gemini-pro" data-api="google">Gemini Pro</option>
-                            </select>
+                        <div class="form-group">
+                            <label><i class="fas fa-robot"></i> 模型名称（OpenRouter）</label>
+                            <input type="text" id="${cardId}_model" required placeholder="例如：openai/gpt-4o">
                         </div>
                         <div class="form-group">
                             <label>温度: <span id="${cardId}_temp_value">1.0</span></label>
@@ -2137,14 +2095,6 @@
 
                 // 设置温度滑块
                 setupSlider(`${cardId}_temperature`, `${cardId}_temp_value`);
-
-                // 设置API联动
-                const apiTypeSelect = document.getElementById(`${cardId}_api_type`);
-                const modelSelect = document.getElementById(`${cardId}_model`);
-                apiTypeSelect.addEventListener('change', function() {
-                    updateModelOptions(this.value, modelSelect);
-                });
-                updateModelOptions('deepseek', modelSelect);
 
                 // 更新按钮状态
                 if (modelCards.length + 1 >= 3) {
@@ -2183,16 +2133,15 @@
                 if (currentMode === 'single') {
                     // 单模型翻译
                     const config = {
-                        api_type: document.getElementById('single_api_type').value,
                         api_key: document.getElementById('single_api_key').value,
-                        model: document.getElementById('single_model').value,
+                        model: document.getElementById('single_model').value.trim(),
                         temperature: document.getElementById('single_temperature').value,
                         source_lang: document.getElementById('single_source_lang').value,
                         target_lang: document.getElementById('single_target_lang').value,
                         system_prompt: document.getElementById('single_system_prompt').value
                     };
 
-                    const modelName = document.getElementById('single_model').selectedOptions[0].text;
+                    const modelName = config.model || '未命名模型';
                     await performTranslation(userText, config, modelName);
                     compareBtn.style.display = 'none';
                 } else {
@@ -2212,16 +2161,15 @@
                     modelCards.forEach(card => {
                         const cardId = card.getAttribute('data-id');
                         const config = {
-                            api_type: document.getElementById(`${cardId}_api_type`).value,
                             api_key: document.getElementById(`${cardId}_api_key`).value,
-                            model: document.getElementById(`${cardId}_model`).value,
+                            model: document.getElementById(`${cardId}_model`).value.trim(),
                             temperature: document.getElementById(`${cardId}_temperature`).value,
                             source_lang: sourceLang,
                             target_lang: targetLang,
                             system_prompt: systemPrompt
                         };
 
-                        const modelName = document.getElementById(`${cardId}_model`).selectedOptions[0].text;
+                        const modelName = config.model || `模型 ${cardId}`;
                         promises.push(performTranslation(userText, config, modelName));
                     });
 
@@ -2251,7 +2199,6 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             user_message: userText,
-                            api_type: config.api_type,
                             api_key: config.api_key,
                             model: config.model,
                             temperature: config.temperature,
@@ -2356,6 +2303,7 @@
             const reviewModeBtns = document.querySelectorAll('[data-review-mode]');
             const singleReviewConfig = document.getElementById('singleReviewConfig');
             const dualReviewConfig = document.getElementById('dualReviewConfig');
+            const twoStageReviewConfig = document.getElementById('twoStageReviewConfig');
             const meetingReviewConfig = document.getElementById('meetingReviewConfig');
 
             reviewModeBtns.forEach(btn => {
@@ -2368,12 +2316,15 @@
 
                     singleReviewConfig.style.display = 'none';
                     dualReviewConfig.style.display = 'none';
+                    twoStageReviewConfig.style.display = 'none';
                     meetingReviewConfig.style.display = 'none';
 
                     if (mode === 'single') {
                         singleReviewConfig.style.display = 'block';
                     } else if (mode === 'dual') {
                         dualReviewConfig.style.display = 'block';
+                    } else if (mode === 'two-stage') {
+                        twoStageReviewConfig.style.display = 'block';
                     } else if (mode === 'meeting') {
                         meetingReviewConfig.style.display = 'block';
                         // 自动添加3个专家
@@ -2387,32 +2338,33 @@
                 });
             });
 
-            // API联动配置
-            const reviewSingleApiType = document.getElementById('review_single_api_type');
-            const reviewSingleModel = document.getElementById('review_single_model');
-            if (reviewSingleApiType && reviewSingleModel) {
-                reviewSingleApiType.addEventListener('change', function() {
-                    updateModelOptions(this.value, reviewSingleModel);
-                });
-                updateModelOptions('deepseek', reviewSingleModel);
+            const genreSelect = document.getElementById('review_genre');
+            const fewShotTextarea = document.getElementById('review_few_shot');
+            const promptPreview = document.getElementById('review_prompt_preview');
+            const fewShotTemplates = {
+                '通用': `示例1：{"error_text":"译文片段","index":12,"category":"accuracy","suggestion":"更正译法","reason":"语义偏差"}\n示例2：{"error_text":"术语A","index":45,"category":"terminology","suggestion":"统一译为术语B","reason":"术语不一致"}`,
+                '法律': `示例1：{"error_text":"shall be liable","index":32,"category":"accuracy","suggestion":"应承担责任","reason":"法律责任义务误译"}\n示例2：{"error_text":"party A","index":58,"category":"terminology","suggestion":"甲方","reason":"法律主体称谓不统一"}`,
+                '医学': `示例1：{"error_text":"dosage","index":20,"category":"terminology","suggestion":"剂量","reason":"医学术语误译"}\n示例2：{"error_text":"adverse event","index":71,"category":"accuracy","suggestion":"不良事件","reason":"专业语义偏差"}`,
+                '文学': `示例1：{"error_text":"moonlight","index":15,"category":"style","suggestion":"月光","reason":"意象表达不够诗性"}\n示例2：{"error_text":"he whispered","index":49,"category":"fluency","suggestion":"他低声呢喃","reason":"节奏不够自然"}`,
+                '科技': `示例1：{"error_text":"throughput","index":27,"category":"terminology","suggestion":"吞吐量","reason":"技术术语规范性"}\n示例2：{"error_text":"latency","index":64,"category":"accuracy","suggestion":"延迟","reason":"指标表达不准确"}`,
+                '市场营销': `示例1：{"error_text":"value proposition","index":19,"category":"terminology","suggestion":"价值主张","reason":"营销术语不一致"}\n示例2：{"error_text":"call to action","index":88,"category":"style","suggestion":"行动号召","reason":"营销语气不够明确"}`
+            };
+
+            function updatePromptPreview() {
+                if (!promptPreview) return;
+                const genre = genreSelect ? genreSelect.value : '通用';
+                const fewShotContent = fewShotTextarea ? fewShotTextarea.value.trim() : '';
+                promptPreview.textContent = `体裁：${genre}\n\nJSON输出结构预览：\n{\n  "summary": "...",\n  "errors": [\n    {\n      "error_text": "...",\n      "index": 0,\n      "category": "accuracy/fluency/terminology/style/logic/consistency/omission/addition",\n      "suggestion": "...",\n      "reason": "..."\n    }\n  ],\n  "consistency_notes": "...",\n  "final_suggestion": "..."\n}\n\nFew-shot 示例：\n${fewShotContent || '（将使用默认模板）'}`;
             }
 
-            const reviewDualApiType1 = document.getElementById('review_dual_api_type1');
-            const reviewDualModel1 = document.getElementById('review_dual_model1');
-            if (reviewDualApiType1 && reviewDualModel1) {
-                reviewDualApiType1.addEventListener('change', function() {
-                    updateModelOptions(this.value, reviewDualModel1);
+            if (genreSelect && fewShotTextarea) {
+                fewShotTextarea.value = fewShotTemplates[genreSelect.value] || fewShotTemplates['通用'];
+                updatePromptPreview();
+                genreSelect.addEventListener('change', function() {
+                    fewShotTextarea.value = fewShotTemplates[this.value] || fewShotTemplates['通用'];
+                    updatePromptPreview();
                 });
-                updateModelOptions('deepseek', reviewDualModel1);
-            }
-
-            const reviewDualApiType2 = document.getElementById('review_dual_api_type2');
-            const reviewDualModel2 = document.getElementById('review_dual_model2');
-            if (reviewDualApiType2 && reviewDualModel2) {
-                reviewDualApiType2.addEventListener('change', function() {
-                    updateModelOptions(this.value, reviewDualModel2);
-                });
-                updateModelOptions('deepseek', reviewDualModel2);
+                fewShotTextarea.addEventListener('input', updatePromptPreview);
             }
 
             // 添加专家
@@ -2445,42 +2397,18 @@
                         </button>
                     </div>
                     <div class="expert-config-grid">
-                        <div class="form-group select-wrapper">
-                            <label>API</label>
-                            <select id="${cardId}_api_type">
-                                <option value="deepseek">Deepseek</option>
-                                <option value="openai">OpenAI</option>
-                                <option value="anthropic">Anthropic</option>
-                                <option value="google">Google</option>
-                            </select>
-                        </div>
                         <div class="form-group">
                             <label>API密钥</label>
                             <input type="password" id="${cardId}_api_key" placeholder="sk-...">
                         </div>
-                        <div class="form-group select-wrapper">
-                            <label>模型</label>
-                            <select id="${cardId}_model">
-                                <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
-                                <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
-                                <option value="gpt-4o" data-api="openai">GPT-4</option>
-                                <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
-                                <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
-                                <option value="gemini-pro" data-api="google">Gemini Pro</option>
-                            </select>
+                        <div class="form-group">
+                            <label>模型名称（OpenRouter）</label>
+                            <input type="text" id="${cardId}_model" placeholder="例如：openai/gpt-4o">
                         </div>
                     </div>
                 `;
 
                 meetingModelsContainer.appendChild(expertCard);
-
-                // 设置API联动
-                const apiTypeSelect = document.getElementById(`${cardId}_api_type`);
-                const modelSelect = document.getElementById(`${cardId}_model`);
-                apiTypeSelect.addEventListener('change', function() {
-                    updateModelOptions(this.value, modelSelect);
-                });
-                updateModelOptions('deepseek', modelSelect);
             }
 
             window.removeExpertCard = function(cardId) {
@@ -2521,6 +2449,8 @@
                     await performSingleReview(sourceText, targetText, sourceLang, targetLang);
                 } else if (currentReviewMode === 'dual') {
                     await performDualReview(sourceText, targetText, sourceLang, targetLang);
+                } else if (currentReviewMode === 'two-stage') {
+                    await performTwoStageReview(sourceText, targetText, sourceLang, targetLang);
                 } else if (currentReviewMode === 'meeting') {
                     await performMeetingReview(sourceText, targetText, sourceLang, targetLang);
                 }
@@ -2529,12 +2459,11 @@
             // 单模型译审
             async function performSingleReview(sourceText, targetText, sourceLang, targetLang) {
                 const config = {
-                    api_type: document.getElementById('review_single_api_type').value,
                     api_key: document.getElementById('review_single_api_key').value,
-                    model: document.getElementById('review_single_model').value
+                    model: document.getElementById('review_single_model').value.trim()
                 };
 
-                const modelName = document.getElementById('review_single_model').selectedOptions[0].text;
+                const modelName = config.model || '未命名模型';
 
                 try {
                     const response = await fetch('/review', {
@@ -2602,19 +2531,17 @@
             // 双模型对比
             async function performDualReview(sourceText, targetText, sourceLang, targetLang) {
                 const config1 = {
-                    api_type: document.getElementById('review_dual_api_type1').value,
                     api_key: document.getElementById('review_dual_api_key1').value,
-                    model: document.getElementById('review_dual_model1').value
+                    model: document.getElementById('review_dual_model1').value.trim()
                 };
 
                 const config2 = {
-                    api_type: document.getElementById('review_dual_api_type2').value,
                     api_key: document.getElementById('review_dual_api_key2').value,
-                    model: document.getElementById('review_dual_model2').value
+                    model: document.getElementById('review_dual_model2').value.trim()
                 };
 
-                const modelName1 = document.getElementById('review_dual_model1').selectedOptions[0].text;
-                const modelName2 = document.getElementById('review_dual_model2').selectedOptions[0].text;
+                const modelName1 = config1.model || '模型 1';
+                const modelName2 = config2.model || '模型 2';
 
                 try {
                     const response = await fetch('/review', {
@@ -2714,6 +2641,100 @@
                 `;
             }
 
+            // 双阶段译审
+            async function performTwoStageReview(sourceText, targetText, sourceLang, targetLang) {
+                const scanConfig = {
+                    api_key: document.getElementById('review_scan_api_key').value,
+                    model: document.getElementById('review_scan_model').value.trim()
+                };
+
+                const calibrationConfig = {
+                    api_key: document.getElementById('review_calibration_api_key').value,
+                    model: document.getElementById('review_calibration_model').value.trim()
+                };
+
+                const genre = document.getElementById('review_genre').value;
+                const fewShot = document.getElementById('review_few_shot').value.trim();
+                const humanNotes = document.getElementById('review_human_notes').value.trim();
+
+                const scanModelName = scanConfig.model || '初筛模型';
+                const calibrationModelName = calibrationConfig.model || '校准模型';
+
+                try {
+                    const response = await fetch('/review', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            mode: 'two-stage',
+                            source_text: sourceText,
+                            target_text: targetText,
+                            source_lang: sourceLang,
+                            target_lang: targetLang,
+                            genre: genre,
+                            few_shot: fewShot,
+                            human_notes: humanNotes,
+                            scan_config: scanConfig,
+                            calibration_config: calibrationConfig
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.error) {
+                        reviewResultsContent.innerHTML = `
+                            <div class="review-result-card" style="background: #fee2e2; border-color: #fecaca;">
+                                <p style="color: #991b1b;"><i class="fas fa-exclamation-circle"></i> ${result.error}</p>
+                            </div>
+                        `;
+                    } else {
+                        displayTwoStageReviewResult(result, scanModelName, calibrationModelName);
+                    }
+                } catch (error) {
+                    reviewResultsContent.innerHTML = `
+                        <div class="review-result-card" style="background: #fee2e2; border-color: #fecaca;">
+                            <p style="color: #991b1b;"><i class="fas fa-exclamation-circle"></i> 网络错误: ${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            function displayTwoStageReviewResult(result, scanModelName, calibrationModelName) {
+                reviewResultsContent.innerHTML = `
+                    <div class="review-result-card">
+                        <div class="review-result-header">
+                            <div class="review-result-title">
+                                <i class="fas fa-bolt"></i> 初筛扫描：${scanModelName}
+                            </div>
+                            <div class="review-score">
+                                <i class="fas fa-flag"></i> Stage 1
+                            </div>
+                        </div>
+                        <div class="review-content-section">
+                            <div class="review-section-label">
+                                <i class="fas fa-code"></i> JSON 输出
+                            </div>
+                            <div class="json-output">${escapeHtml(result.scan_output)}</div>
+                        </div>
+                    </div>
+                    <div class="review-result-card">
+                        <div class="review-result-header">
+                            <div class="review-result-title">
+                                <i class="fas fa-brain"></i> 深度校准：${calibrationModelName}
+                            </div>
+                            <div class="review-score">
+                                <i class="fas fa-flag-checkered"></i> Stage 2
+                            </div>
+                        </div>
+                        <div class="review-content-section">
+                            <div class="review-section-label">
+                                <i class="fas fa-code"></i> 结构化结论
+                            </div>
+                            <div class="json-output">${escapeHtml(result.calibration_output)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
             // 模型开会
             async function performMeetingReview(sourceText, targetText, sourceLang, targetLang) {
                 const expertCards = document.querySelectorAll('.expert-card');
@@ -2730,9 +2751,8 @@
                         role: role.name,
                         icon: role.icon,
                         config: {
-                            api_type: document.getElementById(`${cardId}_api_type`).value,
                             api_key: document.getElementById(`${cardId}_api_key`).value,
-                            model: document.getElementById(`${cardId}_model`).value
+                            model: document.getElementById(`${cardId}_model`).value.trim()
                         }
                     });
                 });

@@ -170,7 +170,7 @@ async def upload_file():
         logger.info(f"文件已保存: {file_path}")
         
         # 获取API类型和密钥
-        api_type = request.form.get('api_type', 'deepseek')
+        api_type = request.form.get('api_type', 'openrouter')
         api_key = request.form.get('api_key', '')
         if not api_key:
             logger.warning("API密钥不能为空")
@@ -232,7 +232,7 @@ async def interactive_translate():
         if not user_message:
             return jsonify({'error': '翻译内容不能为空'}), 400
             
-        api_type = data.get('api_type', 'deepseek')
+        api_type = data.get('api_type', 'openrouter')
         api_key = data.get('api_key', '')
         if not api_key:
             return jsonify({'error': 'API密钥不能为空'}), 400
@@ -279,7 +279,7 @@ async def interactive_translate():
 
 @app.route('/review', methods=['POST'])
 async def ai_review():
-    """AI译审接口，支持三种模式：单模型、双模型对比、模型开会"""
+    """AI译审接口，支持单模型、双模型对比、双阶段协同、模型开会"""
     try:
         data = request.get_json()
 
@@ -301,6 +301,8 @@ async def ai_review():
             return await perform_single_review(data, source_text, target_text, source_lang, target_lang)
         elif mode == 'dual':
             return await perform_dual_review(data, source_text, target_text, source_lang, target_lang)
+        elif mode == 'two-stage':
+            return await perform_two_stage_review(data, source_text, target_text, source_lang, target_lang)
         elif mode == 'meeting':
             return await perform_meeting_review(data, source_text, target_text, source_lang, target_lang)
         else:
@@ -315,14 +317,13 @@ async def perform_single_review(data, source_text, target_text, source_lang, tar
     """单模型译审"""
     try:
         config = data.get('config', {})
-        api_type = config.get('api_type', 'deepseek')
         api_key = config.get('api_key', '')
         model = config.get('model', '')
 
         if not api_key or not model:
             return jsonify({'error': 'API密钥和模型不能为空'}), 400
 
-        translator = create_translator(api_type, api_key)
+        translator = create_translator('openrouter', api_key)
 
         # 构建译审提示词
         review_prompt = f"""请对以下翻译质量进行专业评估：
@@ -397,7 +398,7 @@ async def perform_dual_review(data, source_text, target_text, source_lang, targe
         tasks = []
 
         # 模型1
-        translator1 = create_translator(config1.get('api_type', 'deepseek'), config1.get('api_key', ''))
+        translator1 = create_translator('openrouter', config1.get('api_key', ''))
         review_prompt = f"""请对以下翻译质量进行专业评估：
 
 原文（{source_lang}）：
@@ -429,7 +430,7 @@ async def perform_dual_review(data, source_text, target_text, source_lang, targe
         )
 
         # 模型2
-        translator2 = create_translator(config2.get('api_type', 'deepseek'), config2.get('api_key', ''))
+        translator2 = create_translator('openrouter', config2.get('api_key', ''))
         response2 = translator2.translate(
             review_prompt,
             source_lang='中文',
@@ -503,6 +504,111 @@ async def perform_dual_review(data, source_text, target_text, source_lang, targe
         logger.error(f"双模型对比译审失败: {str(e)}")
         return jsonify({'error': f'译审失败: {str(e)}'}), 500
 
+async def perform_two_stage_review(data, source_text, target_text, source_lang, target_lang):
+    """双阶段推理与人机协同译审"""
+    try:
+        scan_config = data.get('scan_config', {})
+        calibration_config = data.get('calibration_config', {})
+
+        genre = data.get('genre', '通用')
+        few_shot = data.get('few_shot', '')
+        human_notes = data.get('human_notes', '')
+
+        if not scan_config.get('api_key') or not scan_config.get('model'):
+            return jsonify({'error': '初筛扫描的API密钥和模型不能为空'}), 400
+
+        if not calibration_config.get('api_key') or not calibration_config.get('model'):
+            return jsonify({'error': '深度校准的API密钥和模型不能为空'}), 400
+
+        logger.info("双阶段译审启动: 初筛扫描 -> 深度校准")
+        logger.info(f"体裁: {genre}")
+
+        scan_translator = create_translator('openrouter', scan_config.get('api_key', ''))
+
+        scan_prompt = f"""你是译文质量初筛扫描器，请快速识别译文中的显性错误片段。
+只需标注明显的问题（如漏译、错译、术语误用、语法错误、数字/时间/专名错误）。
+请输出标准化JSON数组，每一项必须包含：
+- error_text: 译文中的错误片段原文
+- index: 错误在译文中的起始索引（从0开始）
+- category: 错误类别（accuracy/fluency/terminology/style/logic/consistency/omission/addition）
+- suggestion: 修正建议
+
+原文（{source_lang}）：
+{source_text}
+
+译文（{target_lang}）：
+{target_text}
+
+只输出JSON数组，不要输出其他文字。"""
+
+        scan_output = scan_translator.translate(
+            scan_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=scan_config.get('model', ''),
+            temperature=0.2
+        )
+
+        calibration_translator = create_translator('openrouter', calibration_config.get('api_key', ''))
+
+        calibration_prompt = f"""你是强推理译审专家，请结合初筛扫描结果进行深度校准。
+目标：解决逻辑疑点、篇章一致性问题，并输出可追溯的结构化JSON。
+
+体裁：{genre}
+人类关注点（可选）：{human_notes or '无'}
+
+初筛扫描结果（JSON数组）：
+{scan_output}
+
+Few-shot 示例（如果有）： 
+{few_shot or '无'}
+
+原文（{source_lang}）：
+{source_text}
+
+译文（{target_lang}）：
+{target_text}
+
+输出要求（只输出JSON对象）：
+{{
+  "summary": "整体结论与质量概述",
+  "errors": [
+    {{
+      "error_text": "译文错误片段",
+      "index": 0,
+      "category": "accuracy/fluency/terminology/style/logic/consistency/omission/addition",
+      "suggestion": "修正建议",
+      "reason": "判定原因"
+    }}
+  ],
+  "consistency_notes": "跨段落一致性/逻辑链条的说明",
+  "final_suggestion": "最终改进建议"
+}}
+
+请确保JSON合法，不包含额外解释性文本。"""
+
+        calibration_output = calibration_translator.translate(
+            calibration_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=calibration_config.get('model', ''),
+            temperature=0.3
+        )
+
+        if not scan_output or not calibration_output:
+            return jsonify({'error': '双阶段译审失败'}), 500
+
+        return jsonify({
+            'success': True,
+            'genre': genre,
+            'scan_output': scan_output,
+            'calibration_output': calibration_output
+        })
+
+    except Exception as e:
+        logger.error(f"双阶段译审失败: {str(e)}")
+        return jsonify({'error': f'译审失败: {str(e)}'}), 500
+
 async def perform_meeting_review(data, source_text, target_text, source_lang, target_lang):
     """模型开会译审 - 多专家民主表决"""
     try:
@@ -519,14 +625,13 @@ async def perform_meeting_review(data, source_text, target_text, source_lang, ta
             config = expert.get('config', {})
             icon = expert.get('icon', 'fa-user')
 
-            api_type = config.get('api_type', 'deepseek')
             api_key = config.get('api_key', '')
             model = config.get('model', '')
 
             if not api_key or not model:
                 continue
 
-            translator = create_translator(api_type, api_key)
+            translator = create_translator('openrouter', api_key)
 
             # 根据专家角色构建专门的提示词
             role_prompts = {
@@ -591,7 +696,7 @@ async def perform_meeting_review(data, source_text, target_text, source_lang, ta
         # 使用第一个专家的配置来生成最终共识
         first_expert_config = experts[0].get('config', {})
         final_translator = create_translator(
-            first_expert_config.get('api_type', 'deepseek'),
+            'openrouter',
             first_expert_config.get('api_key', '')
         )
 
