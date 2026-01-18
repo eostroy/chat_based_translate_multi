@@ -90,10 +90,7 @@ def start_server():
                 'templates/index.html',
                 'translators/__init__.py',
                 'translators/base.py',
-                'translators/deepseek.py',
-                'translators/openai.py',
-                'translators/anthropic.py',
-                'translators/google.py',
+                'translators/openrouter.py',
             ]
         )
     except KeyboardInterrupt:

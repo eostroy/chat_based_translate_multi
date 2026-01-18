@@ -1,18 +1,15 @@
 # ATP: AI-driven Translation Platform
 
-一个功能强大的AI驱动翻译平台，支持多模型、多语言、多场景的智能翻译服务。
+一个功能强大的AI驱动翻译平台，通过 OpenRouter 接入多模型、多语言、多场景的智能翻译服务。
 
 ## 📖 项目简介
 
-ATP (AI-driven Translation Platform) 是一个基于现代AI技术的智能翻译平台，支持多种主流AI模型（DeepSeek、OpenAI、Anthropic、Google），提供文档翻译、交互式翻译等多种翻译模式。平台采用现代化的Web界面设计，支持实时翻译、批量处理、自定义提示词等高级功能。
+ATP (AI-driven Translation Platform) 是一个基于现代AI技术的智能翻译平台，通过 OpenRouter 统一调用模型，提供文档翻译、交互式翻译等多种翻译模式。平台采用现代化的Web界面设计，支持实时翻译、批量处理、自定义提示词等高级功能。
 
 ## ✨ 核心功能
 
 ### 1. 交互式翻译
-- **双模式切换**:
-  - 单模型翻译：快速单次翻译
-  - 多模型翻译：最多3个模型同时翻译，横向对比结果
-- **多模型支持**: 支持 DeepSeek、OpenAI GPT-4、Anthropic Claude、Google Gemini 等主流模型
+- **模型选择**: 通过 OpenRouter 统一接入多模型
 - **自定义参数**: 可调节温度参数、系统提示词等，满足不同翻译需求
 - **结果对比**: 支持弹窗横向对比多个模型的翻译结果
 - **统一界面**: 单一主界面，操作更直观
@@ -84,17 +81,9 @@ cd ATP
 
 2. **安装依赖**
 ```bash
-pip install -r text_process/requirements.txt
-```
-
-或者手动安装：
-```bash
 pip install flask==3.0.2
 pip install python-docx==1.1.0
 pip install requests==2.31.0
-pip install anthropic==0.18.1
-pip install google-generativeai==0.3.2
-pip install openai==1.12.0
 pip install aiohttp==3.9.3
 pip install hypercorn==0.16.0
 pip install docx2txt
@@ -129,7 +118,7 @@ python main.py --prod
 
 1. 点击"交互翻译"卡片进入交互翻译页面
 2. 在左侧设置栏配置：
-   - 选择API提供商（DeepSeek/OpenAI/Anthropic/Google）
+   - 选择模型（OpenRouter）
    - 输入API密钥
    - 选择模型
    - 设置温度参数（0-2，控制输出随机性）
@@ -144,7 +133,7 @@ python main.py --prod
 1. 点击"文档翻译"卡片进入文档翻译页面
 2. 上传要翻译的文档（支持 .txt, .doc, .docx 格式）
 3. 配置翻译参数：
-   - 选择API和模型
+   - 选择模型（OpenRouter）
    - 输入API密钥
    - 设置温度参数
    - 选择源语言和目标语言
@@ -163,41 +152,24 @@ python main.py --prod
 ```
 ATP/
 ├── main.py                 # Flask主应用程序
-├── translators.py          # 多模型翻译器实现
 ├── text_processor.py       # 文本处理和分块模块
-├── deepseek_translator.py  # DeepSeek翻译器（已整合到translators.py）
-├── terminology_extract.py  # 术语提取模块
-├── 2vec_and_rag.py        # 向量化和RAG相关功能
+├── translators/            # OpenRouter 翻译器封装
+│   ├── __init__.py
+│   ├── base.py
+│   └── openrouter.py
 ├── templates/
 │   └── index.html         # Web界面模板
 ├── uploads/               # 上传文件临时存储
 ├── outputs/               # 翻译结果存储
-├── text_process/
-│   └── requirements.txt   # 依赖包列表
 └── README.md             # 项目说明文档
 ```
 
 ## 🔑 API密钥获取
 
-### DeepSeek
-1. 访问 [DeepSeek官网](https://www.deepseek.com/)
+### OpenRouter
+1. 访问 [OpenRouter](https://openrouter.ai/)
 2. 注册账号并登录
-3. 在控制台创建API密钥
-
-### OpenAI
-1. 访问 [OpenAI官网](https://platform.openai.com/)
-2. 注册账号并登录
-3. 在API Keys页面创建密钥
-
-### Anthropic
-1. 访问 [Anthropic官网](https://www.anthropic.com/)
-2. 注册账号并登录
-3. 在控制台创建API密钥
-
-### Google
-1. 访问 [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. 使用Google账号登录
-3. 创建API密钥
+3. 在控制台创建 API Key
 
 ## 🎨 技术栈
 
@@ -209,16 +181,12 @@ ATP/
 - **docx2txt**: 文档文本提取
 
 ### AI模型集成
-- **DeepSeek API**: DeepSeek Chat / DeepSeek Reasoner
-- **OpenAI API**: GPT-4 / GPT-4.5 Preview
-- **Anthropic API**: Claude 3.7 Sonnet
-- **Google API**: Gemini Pro
+- **OpenRouter**: 统一接入多模型
 
 ### 前端
 - **HTML5/CSS3**: 现代化响应式设计
 - **JavaScript (ES6+)**: 交互逻辑
 - **Font Awesome**: 图标库
-- **Google Fonts (Inter)**: 字体
 
 ## ⚙️ 配置说明
 
@@ -229,7 +197,7 @@ ATP/
 
 ### 翻译参数
 
-在 `translators.py` 中可以调整：
+在 `translators/openrouter.py` 中可以调整：
 - `temperature`: 温度参数（0-2）
 - `top_p`: 核采样参数
 - `max_tokens`: 最大输出token数
@@ -239,7 +207,7 @@ ATP/
 1. **API密钥安全**: 请妥善保管您的API密钥，不要将其提交到公共代码仓库
 2. **文件大小限制**: 默认最大上传文件大小为50MB
 3. **翻译时间**: 大型文档可能需要较长的处理时间，请耐心等待
-4. **API配额**: 请注意各API提供商的调用限制和费用
+4. **API配额**: 请注意 OpenRouter 的调用限制和费用
 5. **网络连接**: 确保网络连接稳定，以便正常调用API
 
 ## 🐛 常见问题
@@ -252,8 +220,8 @@ A: 请检查：
 - 文件格式是否支持
 
 ### Q: 如何提高翻译质量？
-A: 
-- 使用更高级的模型（如GPT-4、Claude 3.7）
+A:
+- 通过 OpenRouter 选择更高等级模型
 - 添加详细的系统提示词
 - 调整温度参数
 - 对长文档进行分段处理

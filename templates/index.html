@@ -286,6 +286,44 @@
             flex-wrap: wrap;
         }
 
+        .app-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(71, 85, 105, 0.82));
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            box-shadow: 0 10px 20px -16px rgba(15, 23, 42, 0.8);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-logo::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+            background: rgba(248, 250, 252, 0.9);
+            top: 6px;
+            left: 6px;
+            box-shadow: 8px 8px 0 rgba(148, 163, 184, 0.6);
+        }
+
+        .app-logo::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 2px;
+            background: rgba(226, 232, 240, 0.8);
+            bottom: 6px;
+            left: 6px;
+            transform: rotate(-20deg);
+        }
+
         .model-label {
             font-size: 0.85rem;
             color: var(--text-secondary);
@@ -483,16 +521,24 @@
             align-items: flex-end;
         }
 
+        .input-container {
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            background: var(--surface-strong);
+            padding: 6px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
         .input-shell {
             display: flex;
             align-items: flex-end;
             gap: 8px;
-            padding: 4px 10px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            background: var(--surface-strong);
             flex: 1;
             min-height: 44px;
+            position: relative;
         }
 
         .input-toolbar textarea {
@@ -533,6 +579,83 @@
             flex-shrink: 0;
         }
 
+        .file-badge {
+            min-width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(148, 163, 184, 0.18);
+            color: var(--text-primary);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .file-menu {
+            position: absolute;
+            top: 52px;
+            left: 0;
+            background: var(--surface-strong);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            padding: 8px;
+            min-width: 180px;
+            display: none;
+            z-index: 50;
+        }
+
+        .file-menu.open {
+            display: block;
+        }
+
+        .file-menu-item {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.88rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .file-menu-item:hover {
+            background: rgba(148, 163, 184, 0.16);
+        }
+
+        .file-submenu {
+            margin-top: 6px;
+            display: none;
+            grid-template-columns: repeat(2, minmax(70px, 1fr));
+            gap: 6px;
+        }
+
+        .file-submenu.open {
+            display: grid;
+        }
+
+        .file-submenu button {
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            background: rgba(148, 163, 184, 0.08);
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .file-submenu button:hover {
+            background: rgba(148, 163, 184, 0.16);
+        }
+
         .input-shell .send-btn {
             width: 44px;
             height: 44px;
@@ -566,6 +689,40 @@
             color: var(--text-secondary);
         }
 
+        .temperature-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 2px 4px;
+        }
+
+        .temperature-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .temperature-range {
+            flex: 1;
+        }
+
+        .temperature-number {
+            width: 70px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            color: var(--text-primary);
+        }
+
+        .temperature-value {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            min-width: 34px;
+            text-align: right;
+        }
+
         .file-chip strong {
             color: var(--text-primary);
         }
@@ -586,6 +743,17 @@
             font-size: 0.9rem;
             background: var(--surface-strong);
             color: var(--text-primary);
+        }
+
+        .temperature-row .temperature-range {
+            border: none;
+            background: transparent;
+            padding: 0;
+        }
+
+        .temperature-row .temperature-number {
+            padding: 6px 8px;
+            border-radius: 10px;
         }
 
         .input-actions {
@@ -870,6 +1038,7 @@
             <div class="top-bar">
                 <div class="brand">
                     <div class="brand-row">
+                        <span class="app-logo" aria-hidden="true"></span>
                         <span class="model-label">模型名称</span>
                         <input class="model-input" id="modelInput" type="text" placeholder="模型名称（OpenRouter）" list="modelHistoryList">
                         <datalist id="modelHistoryList"></datalist>
@@ -925,7 +1094,7 @@
         const STORAGE_MODEL_HISTORY = 'modelHistory';
         const DEFAULT_PREFS = {
             sourceLang: 'auto',
-            targetLang: '中文',
+            targetLang: 'auto',
             styleNotes: ''
         };
 
@@ -955,6 +1124,14 @@
             意: '意大利文'
         };
 
+        const BADGE_LANGUAGES = [
+            { label: '德语', value: '德文', code: 'DE' },
+            { label: '法语', value: '法文', code: 'FR' },
+            { label: '日语', value: '日文', code: 'JA' },
+            { label: '意大利语', value: '意大利文', code: 'IT' },
+            { label: '韩语', value: '韩文', code: 'KO' }
+        ];
+
         const HISTORY_LABEL = '自动识别';
 
         let conversations = [];
@@ -975,6 +1152,15 @@
             }
             if (!conversation.model) {
                 conversation.model = '';
+            }
+            if (conversation.temperature === undefined || conversation.temperature === null) {
+                conversation.temperature = 0;
+            }
+            if (conversation.draftText === undefined || conversation.draftText === null) {
+                conversation.draftText = '';
+            }
+            if (!conversation.badgeTargetLang) {
+                conversation.badgeTargetLang = '';
             }
             if (!conversation.messages) {
                 conversation.messages = [];
@@ -1092,7 +1278,7 @@
                 return '';
             }
             const sourceLabel = prefs.sourceLang === 'auto' ? '自动检测语言' : (prefs.sourceLang || '源语言');
-            const targetLabel = prefs.targetLang || '目标语言';
+            const targetLabel = prefs.targetLang && prefs.targetLang !== 'auto' ? prefs.targetLang : '目标语言';
             return (
                 `你是一个专业翻译，擅长从${sourceLabel}到${targetLabel}的翻译。` +
                 `请保持原文语气、风格一致。\n补充要求：${prefs.styleNotes}`
@@ -1136,6 +1322,19 @@
             }
         }
 
+        function resolveRequestPrefs(conversation, text) {
+            const explicit = extractLanguagePrefs(text || '');
+            const sourceLang = explicit.sourceLang || (conversation.translationPrefs && conversation.translationPrefs.sourceLang) || 'auto';
+            const targetLang = explicit.targetLang || conversation.badgeTargetLang || 'auto';
+            const styleNotes = (conversation.translationPrefs && conversation.translationPrefs.styleNotes) || '';
+            return {
+                sourceLang,
+                targetLang,
+                styleNotes,
+                hasExplicitTarget: Boolean(explicit.targetLang)
+            };
+        }
+
         function saveState() {
             localStorage.setItem(STORAGE_CONVERSATIONS, JSON.stringify(conversations));
             localStorage.setItem(STORAGE_REVIEWS, JSON.stringify(reviewRecords));
@@ -1176,6 +1375,9 @@
                 title: '新对话',
                 mode: 'auto',
                 model: '',
+                temperature: 0,
+                draftText: '',
+                badgeTargetLang: '',
                 messages: [],
                 translationPrefs: { ...DEFAULT_PREFS }
             };
@@ -1302,7 +1504,7 @@
             conversation.messages.forEach(message => {
                 messagesEl.appendChild(renderMessage(message));
             });
-            renderInputPanel();
+            renderInputPanel(conversation);
             if (preserveScroll) {
                 const maxScroll = Math.max(0, messagesEl.scrollHeight - messagesEl.clientHeight);
                 messagesEl.scrollTop = Math.min(priorScrollTop, maxScroll);
@@ -1495,27 +1697,47 @@
             textarea.style.overflowY = 'hidden';
         }
 
-        function renderInputPanel() {
+        function renderInputPanel(conversation) {
             inputPanel.innerHTML = '';
             showStatus('', '');
             inputPanel.innerHTML = `
                 <div class="input-toolbar">
-                    <div class="input-shell">
-                        <button class="file-btn" id="fileBtn" title="选择文档" aria-label="选择文档">
-                            <i class="fas fa-paperclip"></i>
-                        </button>
-                        <textarea id="chatInput" rows="1" placeholder="请输入..."></textarea>
-                        <input type="file" id="docFile" accept=".txt,.doc,.docx" hidden />
-                        <button class="send-btn" id="sendBtn" title="发送" aria-label="发送">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
+                    <div class="input-container">
+                        <div class="input-shell">
+                            <button class="file-btn" id="fileBtn" title="附件与目标语言" aria-label="附件与目标语言">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <span class="file-badge" id="targetBadge" style="display: none;"></span>
+                            <div class="file-menu" id="fileMenu">
+                                <button class="file-menu-item" id="fileMenuUpload">
+                                    选择文件
+                                    <i class="fas fa-file-arrow-up"></i>
+                                </button>
+                                <button class="file-menu-item" id="fileMenuTarget">
+                                    选择目标语言
+                                    <i class="fas fa-angle-right"></i>
+                                </button>
+                                <div class="file-submenu" id="fileSubmenu"></div>
+                            </div>
+                            <textarea id="chatInput" rows="1" placeholder="请输入..."></textarea>
+                            <input type="file" id="docFile" accept=".txt,.doc,.docx" hidden />
+                            <button class="send-btn" id="sendBtn" title="发送" aria-label="发送">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="file-chip" id="fileChip" style="display: none;">
+                            <span>已选择：<strong id="fileName"></strong></span>
+                            <button class="file-clear" id="fileClear" title="移除文件" aria-label="移除文件">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="temperature-row">
+                            <span class="temperature-label">温度</span>
+                            <input class="temperature-range" type="range" id="temperatureRange" min="0" max="2" step="0.1" value="0">
+                            <input class="temperature-number" type="number" id="temperatureInput" min="0" max="2" step="0.1" value="0">
+                            <span class="temperature-value" id="temperatureValue">0.0</span>
+                        </div>
                     </div>
-                </div>
-                <div class="file-chip" id="fileChip" style="display: none;">
-                    <span>已选择：<strong id="fileName"></strong></span>
-                    <button class="file-clear" id="fileClear" title="移除文件" aria-label="移除文件">
-                        <i class="fas fa-times"></i>
-                    </button>
                 </div>
             `;
             const fileBtn = document.getElementById('fileBtn');
@@ -1523,7 +1745,15 @@
             const fileChip = document.getElementById('fileChip');
             const fileName = document.getElementById('fileName');
             const fileClear = document.getElementById('fileClear');
+            const fileMenu = document.getElementById('fileMenu');
+            const fileMenuUpload = document.getElementById('fileMenuUpload');
+            const fileMenuTarget = document.getElementById('fileMenuTarget');
+            const fileSubmenu = document.getElementById('fileSubmenu');
+            const targetBadge = document.getElementById('targetBadge');
             const chatInput = document.getElementById('chatInput');
+            const tempRange = document.getElementById('temperatureRange');
+            const tempInput = document.getElementById('temperatureInput');
+            const tempValue = document.getElementById('temperatureValue');
 
             const updateFileChip = file => {
                 if (file) {
@@ -1535,7 +1765,82 @@
                 }
             };
 
-            fileBtn.addEventListener('click', () => fileInput.click());
+            const badgeInfoFor = value => {
+                if (!value) return null;
+                return BADGE_LANGUAGES.find(item => item.value === value) || null;
+            };
+
+            const updateBadge = () => {
+                const info = badgeInfoFor(conversation.badgeTargetLang);
+                if (!info) {
+                    targetBadge.style.display = 'none';
+                    targetBadge.textContent = '';
+                    return;
+                }
+                targetBadge.textContent = info.code;
+                targetBadge.style.display = 'inline-flex';
+            };
+
+            const closeMenu = () => {
+                if (!fileMenu) return;
+                fileMenu.classList.remove('open');
+                fileSubmenu.classList.remove('open');
+            };
+
+            const openMenu = () => {
+                if (!fileMenu) return;
+                fileMenu.classList.add('open');
+                setTimeout(() => {
+                    document.addEventListener('click', closeMenu, { once: true });
+                }, 0);
+            };
+
+            fileBtn.addEventListener('click', event => {
+                event.stopPropagation();
+                if (fileMenu.classList.contains('open')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+
+            fileMenu.addEventListener('click', event => {
+                event.stopPropagation();
+            });
+
+            fileMenuUpload.addEventListener('click', () => {
+                closeMenu();
+                fileInput.click();
+            });
+
+            fileMenuTarget.addEventListener('click', () => {
+                fileSubmenu.classList.toggle('open');
+            });
+
+            fileSubmenu.innerHTML = '';
+            BADGE_LANGUAGES.forEach(item => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = item.label;
+                btn.addEventListener('click', () => {
+                    conversation.badgeTargetLang = item.value;
+                    saveState();
+                    updateBadge();
+                    closeMenu();
+                });
+                fileSubmenu.appendChild(btn);
+            });
+            const clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.textContent = '清除';
+            clearBtn.addEventListener('click', () => {
+                conversation.badgeTargetLang = '';
+                saveState();
+                updateBadge();
+                closeMenu();
+            });
+            fileSubmenu.appendChild(clearBtn);
+
             fileInput.addEventListener('change', () => {
                 const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
                 updateFileChip(file);
@@ -1545,12 +1850,42 @@
                 updateFileChip(null);
             });
 
+            const clampTemperature = value => {
+                const parsed = Number.parseFloat(value);
+                if (Number.isNaN(parsed)) return 0;
+                return Math.min(2, Math.max(0, parsed));
+            };
+
+            const applyTemperature = value => {
+                const next = clampTemperature(value);
+                const display = next.toFixed(1);
+                tempRange.value = display;
+                tempInput.value = display;
+                tempValue.textContent = display;
+                conversation.temperature = next;
+                saveState();
+            };
+
+            if (conversation.temperature === undefined || conversation.temperature === null) {
+                conversation.temperature = 0;
+            }
+            applyTemperature(conversation.temperature);
+
+            tempRange.addEventListener('input', event => applyTemperature(event.target.value));
+            tempInput.addEventListener('input', event => applyTemperature(event.target.value));
+
             if (chatInput) {
+                chatInput.value = conversation.draftText || '';
                 resetChatInputHeight(chatInput);
                 adjustChatInputHeight(chatInput);
-                chatInput.addEventListener('input', () => adjustChatInputHeight(chatInput));
+                chatInput.addEventListener('input', () => {
+                    adjustChatInputHeight(chatInput);
+                    conversation.draftText = chatInput.value;
+                    saveState();
+                });
             }
 
+            updateBadge();
             document.getElementById('sendBtn').addEventListener('click', handleUnifiedSend);
         }
 
@@ -1635,8 +1970,13 @@
             const chatInput = document.getElementById('chatInput');
             const file = fileInput && fileInput.files ? fileInput.files[0] : null;
             const draftNotes = chatInput ? chatInput.value.trim() : '';
+            const conversation = getActiveConversation();
 
             if (file) {
+                if (conversation) {
+                    conversation.draftText = draftNotes;
+                    saveState();
+                }
                 openDocNotesModal(fileInput, draftNotes);
                 return;
             }
@@ -1663,8 +2003,12 @@
             }
 
             updateConversationPrefs(conversation, text);
-            const prefs = conversation.translationPrefs || { ...DEFAULT_PREFS };
-            const systemPrompt = buildSystemPrompt(prefs);
+            const requestPrefs = resolveRequestPrefs(conversation, text);
+            const systemPrompt = buildSystemPrompt({
+                sourceLang: requestPrefs.sourceLang,
+                targetLang: requestPrefs.targetLang,
+                styleNotes: requestPrefs.styleNotes
+            });
 
             updateConversationTitle(conversation, text);
             appendMessage(conversation, { role: 'user', content: text });
@@ -1673,6 +2017,8 @@
                 input.value = '';
                 resetChatInputHeight(input);
             }
+            conversation.draftText = '';
+            saveState();
 
             const compareFallback = compareContext && compareContext.comparePayload && compareContext.comparePayload.mode === 'review'
                 ? '正在译审'
@@ -1686,9 +2032,11 @@
                         user_message: text,
                         api_key: apiKey,
                         model: conversation.model,
-                        temperature: 1.0,
-                        source_lang: prefs.sourceLang || 'auto',
-                        target_lang: prefs.targetLang || '中文',
+                        temperature: Math.min(2, Math.max(0, Number(conversation.temperature || 0))),
+                        source_lang: requestPrefs.sourceLang || 'auto',
+                        target_lang: requestPrefs.targetLang || 'auto',
+                        badge_target: conversation.badgeTargetLang || '',
+                        explicit_target: requestPrefs.hasExplicitTarget,
                         system_prompt: systemPrompt
                     })
                 });
@@ -1705,8 +2053,8 @@
                         mode: 'interactive',
                         baseOutput: result.translation,
                         inputText: text,
-                        sourceLang: prefs.sourceLang || 'auto',
-                        targetLang: prefs.targetLang || '中文',
+                        sourceLang: requestPrefs.sourceLang || 'auto',
+                        targetLang: requestPrefs.targetLang || 'auto',
                         systemPrompt
                     },
                     compareHistory: [
@@ -1726,23 +2074,6 @@
             }
         }
 
-        function deriveTempPrefs(basePrefs, text) {
-            const prefs = { ...(basePrefs || DEFAULT_PREFS) };
-            if (!text) return prefs;
-            const languagePrefs = extractLanguagePrefs(text);
-            if (languagePrefs.sourceLang) {
-                prefs.sourceLang = languagePrefs.sourceLang;
-            }
-            if (languagePrefs.targetLang) {
-                prefs.targetLang = languagePrefs.targetLang;
-            }
-            const styleNotes = extractStyleNotes(text);
-            if (styleNotes) {
-                prefs.styleNotes = styleNotes;
-            }
-            return prefs;
-        }
-
         async function handleDocumentSend(file, notes, fileInput) {
             const conversation = getActiveConversation();
             if (!file) {
@@ -1760,7 +2091,7 @@
             }
 
             const noteText = notes || '';
-            const prefs = deriveTempPrefs(conversation.translationPrefs || { ...DEFAULT_PREFS }, noteText);
+            const requestPrefs = resolveRequestPrefs(conversation, noteText);
             const userMessage = noteText ? `上传文档：${file.name}\n${noteText}` : `上传文档：${file.name}`;
             updateConversationTitle(conversation, file.name);
             appendMessage(conversation, { role: 'user', content: userMessage });
@@ -1769,15 +2100,19 @@
                 chatInput.value = '';
                 resetChatInputHeight(chatInput);
             }
+            conversation.draftText = '';
+            saveState();
             startStatusSequence(['正在翻译']);
 
             const formData = new FormData();
             formData.append('file', file);
             formData.append('api_key', apiKey);
             formData.append('model', conversation.model);
-            formData.append('temperature', '1.0');
-            formData.append('source_lang', prefs.sourceLang || 'auto');
-            formData.append('target_lang', prefs.targetLang || '中文');
+            formData.append('temperature', `${Math.min(2, Math.max(0, Number(conversation.temperature || 0)))}`);
+            formData.append('source_lang', requestPrefs.sourceLang || 'auto');
+            formData.append('target_lang', requestPrefs.targetLang || 'auto');
+            formData.append('badge_target', conversation.badgeTargetLang || '');
+            formData.append('explicit_target', requestPrefs.hasExplicitTarget ? '1' : '');
             formData.append('system_prompt', noteText);
             formData.append('user_prompt', noteText);
 
@@ -1912,6 +2247,8 @@
                 openApiModal();
                 return;
             }
+            const activeConversation = getActiveConversation();
+            const compareTemperature = Math.min(2, Math.max(0, Number(activeConversation && activeConversation.temperature !== undefined ? activeConversation.temperature : 0)));
 
             compareRun.disabled = true;
             startStatusSequence(['正在翻译']);
@@ -1933,9 +2270,11 @@
                             user_message: compareContext.comparePayload.inputText,
                             api_key: apiKey,
                             model: modelName,
-                            temperature: 1.0,
+                            temperature: compareTemperature,
                             source_lang: compareContext.comparePayload.sourceLang,
                             target_lang: compareContext.comparePayload.targetLang,
+                            badge_target: activeConversation && activeConversation.badgeTargetLang ? activeConversation.badgeTargetLang : '',
+                            explicit_target: false,
                             system_prompt: compareContext.comparePayload.systemPrompt || ''
                         })
                     });

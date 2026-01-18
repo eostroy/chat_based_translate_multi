@@ -57,13 +57,10 @@ ATP/
 ├── start.sh                # Linux/Mac启动脚本
 ├── templates/
 │   └── index.html         # 前端页面
-├── translators/           # 翻译器模块
+├── translators/           # OpenRouter 翻译器模块
 │   ├── __init__.py
 │   ├── base.py
-│   ├── deepseek.py
-│   ├── openai.py
-│   ├── anthropic.py
-│   └── google.py
+│   └── openrouter.py
 ├── uploads/               # 上传文件目录
 └── outputs/               # 输出文件目录
 ```
@@ -106,9 +103,9 @@ curl -X POST http://localhost:5000/translate \
   -H "Content-Type: application/json" \
   -d '{
     "user_message": "Hello World",
-    "api_type": "deepseek",
+    "api_type": "openrouter",
     "api_key": "your-key",
-    "model": "deepseek-chat",
+    "model": "openai/gpt-4o",
     "source_lang": "英文",
     "target_lang": "中文",
     "temperature": 1.0
