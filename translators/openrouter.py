@@ -4,24 +4,9 @@ from typing import Optional
 
 import requests
 
+from .base import BaseTranslator
+
 logger = logging.getLogger(__name__)
-
-
-class BaseTranslator:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-
-    def translate(
-        self,
-        text: str,
-        source_lang: str = "英文",
-        target_lang: str = "中文",
-        model: str = "openai/gpt-4o",
-        system_prompt: Optional[str] = None,
-        user_prompt: Optional[str] = None,
-        temperature: float = 1.0,
-    ) -> Optional[str]:
-        raise NotImplementedError
 
 
 class OpenRouterTranslator(BaseTranslator):
@@ -103,10 +88,3 @@ class OpenRouterTranslator(BaseTranslator):
         except Exception as exc:
             logger.error("OpenRouter 翻译出错: %s", exc)
             return None
-
-
-def create_translator(api_type: str, api_key: str) -> BaseTranslator:
-    """
-    统一使用 OpenRouter API 进行模型调用。
-    """
-    return OpenRouterTranslator(api_key)
