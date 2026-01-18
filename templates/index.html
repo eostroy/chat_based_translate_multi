@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 翻译与译审对话系统（Chat-based）</title>
+    <title>AI 翻译与译审对话系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         :root {
@@ -23,6 +23,10 @@
             --success: #16a34a;
             --error: #dc2626;
             --info: #2563eb;
+            --bubble-user: #3f4652;
+            --bubble-assistant: rgba(255, 255, 255, 0.92);
+            --bubble-border: rgba(148, 163, 184, 0.35);
+            --bubble-shadow: 0 18px 32px -26px rgba(15, 23, 42, 0.5);
         }
 
         * {
@@ -110,7 +114,8 @@
         .sidebar-collapsed .history-title,
         .sidebar-collapsed .history-meta,
         .sidebar-collapsed .new-chat-btn span,
-        .sidebar-collapsed .review-entry span {
+        .sidebar-collapsed .review-entry span,
+        .sidebar-collapsed .history-actions {
             display: none;
         }
 
@@ -148,10 +153,13 @@
         .sidebar-footer {
             margin-top: auto;
             padding-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .review-entry {
-            width: 100%;
+            flex: 1;
             padding: 10px 12px;
             border-radius: 12px;
             border: 1px dashed rgba(255, 255, 255, 0.18);
@@ -161,6 +169,19 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
+        }
+
+        .api-key-entry {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--sidebar-text);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
         }
 
@@ -178,6 +199,13 @@
             transition: all 0.2s ease;
         }
 
+        .history-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
         .history-item:hover {
             background: rgba(255, 255, 255, 0.08);
         }
@@ -190,6 +218,34 @@
         .history-title {
             font-size: 0.9rem;
             font-weight: 600;
+            word-break: break-word;
+        }
+
+        .history-title-input {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--sidebar-text);
+            font-size: 0.9rem;
+            padding: 4px 8px;
+        }
+
+        .history-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .history-action-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--sidebar-text);
+            cursor: pointer;
+            flex-shrink: 0;
         }
 
         .history-meta {
@@ -223,24 +279,25 @@
             gap: 2px;
         }
 
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .model-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
         .brand h1 {
             font-size: 1.4rem;
             font-weight: 700;
         }
 
-        .brand span {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .mode-select,
         .model-input {
             padding: 10px 14px;
             border-radius: 12px;
@@ -248,6 +305,7 @@
             background: var(--surface-strong);
             font-size: 0.9rem;
             color: var(--text-primary);
+            min-width: 240px;
         }
 
         .settings-btn {
@@ -279,37 +337,55 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
             min-height: 0;
         }
 
         .message {
-            display: block;
-            max-width: 82%;
-            padding: 12px 4px;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 78%;
         }
 
         .message.user {
             align-self: flex-end;
-            margin-left: 18%;
+            align-items: flex-end;
         }
 
         .message.assistant {
             align-self: flex-start;
-            margin-right: 18%;
-        }
-
-        .message:last-child {
-            border-bottom: none;
+            align-items: flex-start;
         }
 
         .message-bubble {
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 0;
+            background: var(--bubble-assistant);
+            border: 1px solid var(--bubble-border);
+            border-radius: 18px;
+            padding: 12px 16px;
             font-size: 0.98rem;
+            box-shadow: var(--bubble-shadow);
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: var(--bubble-user);
+            color: #f8fafc;
+            border-color: transparent;
+        }
+
+        .message-bubble p {
+            margin: 0 0 0.7em;
+        }
+
+        .message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-bubble a {
+            color: inherit;
+            text-decoration: underline;
         }
 
         .message-meta {
@@ -321,6 +397,8 @@
         .message-actions {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
         }
 
         .compare-btn {
@@ -331,6 +409,30 @@
             padding: 6px 10px;
             cursor: pointer;
             font-size: 0.8rem;
+        }
+
+        .compare-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .compare-icon-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .compare-index {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
         }
 
         .message-footer {
@@ -375,6 +477,106 @@
             gap: 12px;
         }
 
+        .input-toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-shell {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            padding: 4px 10px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            background: var(--surface-strong);
+            flex: 1;
+            min-height: 44px;
+        }
+
+        .input-toolbar textarea {
+            flex: 1;
+        }
+
+        .input-panel .input-shell textarea {
+            border: none;
+            background: transparent;
+            padding: 10px 4px;
+            height: 44px;
+            min-height: 44px;
+            line-height: 1.4;
+            resize: none;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .input-panel .input-shell textarea:focus {
+            outline: none;
+        }
+
+        .input-panel .input-shell textarea::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .file-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .input-shell .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .file-btn:hover,
+        .input-shell .send-btn:hover {
+            background: rgba(148, 163, 184, 0.16);
+            color: var(--text-primary);
+        }
+
+        .file-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 1px dashed var(--border-color);
+            background: var(--surface-muted);
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .file-chip strong {
+            color: var(--text-primary);
+        }
+
+        .file-clear {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
         .input-panel textarea,
         .input-panel input,
         .input-panel select {
@@ -392,7 +594,7 @@
             gap: 12px;
         }
 
-        .send-btn {
+        .input-actions .send-btn {
             background: var(--primary-color);
             color: #fff;
             border: none;
@@ -460,12 +662,7 @@
             height: 100%;
             width: 0;
             background: linear-gradient(90deg, #334155, #64748b, #94a3b8);
-            animation: progressLoad 2s linear forwards;
-        }
-
-        @keyframes progressLoad {
-            0% { width: 0%; }
-            100% { width: 100%; }
+            transition: width 0.25s ease;
         }
 
         .modal-overlay {
@@ -542,6 +739,14 @@
             padding: 0 3px;
         }
 
+        #reviewResultContent {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 6px;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
         @media (max-width: 960px) {
             .app-shell {
                 grid-template-columns: 1fr;
@@ -560,6 +765,15 @@
                 align-items: flex-start;
             }
 
+            .brand-row {
+                width: 100%;
+                align-items: flex-start;
+            }
+
+            .brand-row .model-input {
+                width: 100%;
+            }
+
             .message {
                 max-width: 100%;
             }
@@ -570,7 +784,7 @@
     <div class="loader-overlay" id="loader">
         <div class="loader-card">
             <h2>AI 翻译与译审对话系统</h2>
-            <p style="margin-top: 6px; color: var(--text-secondary);">Chat-based unified workflow</p>
+            <p style="margin-top: 6px; color: var(--text-secondary);">统一对话翻译流程</p>
             <div class="loader-progress"><span></span></div>
         </div>
     </div>
@@ -621,6 +835,18 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="docNotesModal">
+        <div class="modal" style="width: min(560px, 92vw);">
+            <h3>文档翻译补充说明</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">仅对本次文档翻译生效。</p>
+            <textarea id="docNotesInput" rows="4" placeholder="可填写目标语言、用途、风格、格式要求等" style="width: 100%; margin-top: 12px;"></textarea>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="docNotesCancel">取消</button>
+                <button class="btn-primary" id="docNotesConfirm">开始翻译</button>
+            </div>
+        </div>
+    </div>
+
     <div class="app-shell">
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -630,6 +856,9 @@
             <button class="new-chat-btn" id="newChatBtn"><i class="fas fa-plus"></i> <span>新建对话</span></button>
             <div class="history-list" id="historyList"></div>
             <div class="sidebar-footer">
+                <button class="api-key-entry" id="apiKeyEntry" title="API Key" aria-label="API Key">
+                    <i class="fas fa-key"></i>
+                </button>
                 <button class="review-entry" id="reviewRecordsEntry">
                     <i class="fas fa-clipboard-check"></i>
                     <span>译审记录</span>
@@ -640,16 +869,11 @@
         <main class="main-panel">
             <div class="top-bar">
                 <div class="brand">
-                    <h1>AI 翻译与译审对话系统</h1>
-                    <span>Chat-based</span>
-                </div>
-                <div class="control-group">
-                    <select class="mode-select" id="modeSelect">
-                        <option value="interactive">交互翻译</option>
-                        <option value="document">文档翻译</option>
-                    </select>
-                    <input class="model-input" id="modelInput" type="text" placeholder="模型名称（OpenRouter）">
-                    <button class="settings-btn" id="apiKeySettings"><i class="fas fa-key"></i> API Key</button>
+                    <div class="brand-row">
+                        <span class="model-label">模型名称</span>
+                        <input class="model-input" id="modelInput" type="text" placeholder="模型名称（OpenRouter）" list="modelHistoryList">
+                        <datalist id="modelHistoryList"></datalist>
+                    </div>
                 </div>
             </div>
 
@@ -664,11 +888,12 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         const loader = document.getElementById('loader');
+        const loaderProgress = document.querySelector('#loader .loader-progress span');
         const apiKeyModal = document.getElementById('apiKeyModal');
         const apiKeyInput = document.getElementById('apiKeyInput');
         const apiKeySave = document.getElementById('apiKeySave');
         const apiKeyClear = document.getElementById('apiKeyClear');
-        const apiKeySettings = document.getElementById('apiKeySettings');
+        const apiKeyEntry = document.getElementById('apiKeyEntry');
         const compareModal = document.getElementById('compareModal');
         const compareModelInput = document.getElementById('compareModelInput');
         const compareRun = document.getElementById('compareRun');
@@ -680,7 +905,10 @@
         const reviewResultModal = document.getElementById('reviewResultModal');
         const reviewResultContent = document.getElementById('reviewResultContent');
         const reviewResultClose = document.getElementById('reviewResultClose');
-        const modeSelect = document.getElementById('modeSelect');
+        const docNotesModal = document.getElementById('docNotesModal');
+        const docNotesInput = document.getElementById('docNotesInput');
+        const docNotesConfirm = document.getElementById('docNotesConfirm');
+        const docNotesCancel = document.getElementById('docNotesCancel');
         const modelInput = document.getElementById('modelInput');
         const messagesEl = document.getElementById('messages');
         const inputPanel = document.getElementById('inputPanel');
@@ -694,6 +922,7 @@
         const STORAGE_CONVERSATIONS = 'chatConversations';
         const STORAGE_ACTIVE = 'activeConversationId';
         const STORAGE_REVIEWS = 'reviewRecords';
+        const STORAGE_MODEL_HISTORY = 'modelHistory';
         const DEFAULT_PREFS = {
             sourceLang: 'auto',
             targetLang: '中文',
@@ -726,10 +955,7 @@
             意: '意大利文'
         };
 
-        const modes = {
-            interactive: '交互翻译',
-            document: '文档翻译'
-        };
+        const HISTORY_LABEL = '自动识别';
 
         let conversations = [];
         let activeConversationId = null;
@@ -737,13 +963,15 @@
         let reviewContext = null;
         let reviewRecords = [];
         let activeView = 'conversation';
+        let pendingDocFileInput = null;
+        let modelHistory = [];
 
         function ensureConversationDefaults(conversation) {
             if (!conversation.mode) {
-                conversation.mode = 'interactive';
+                conversation.mode = 'auto';
             }
-            if (!modes[conversation.mode]) {
-                conversation.mode = 'interactive';
+            if (!['auto', 'interactive', 'document'].includes(conversation.mode)) {
+                conversation.mode = 'auto';
             }
             if (!conversation.model) {
                 conversation.model = '';
@@ -888,6 +1116,18 @@
                     reviewRecords = [];
                 }
             }
+            const storedModels = localStorage.getItem(STORAGE_MODEL_HISTORY);
+            if (storedModels) {
+                try {
+                    modelHistory = JSON.parse(storedModels);
+                } catch (error) {
+                    modelHistory = [];
+                }
+            }
+            if (!modelHistory.length && Array.isArray(conversations)) {
+                const seeded = conversations.map(conv => (conv.model || '').trim()).filter(Boolean);
+                modelHistory = Array.from(new Set(seeded)).slice(0, 12);
+            }
             conversations.forEach(ensureConversationDefaults);
             if (conversations.length === 0) {
                 createConversation();
@@ -904,12 +1144,37 @@
             }
         }
 
+        function saveModelHistory() {
+            localStorage.setItem(STORAGE_MODEL_HISTORY, JSON.stringify(modelHistory));
+        }
+
+        function renderModelHistory() {
+            const dataList = document.getElementById('modelHistoryList');
+            if (!dataList) return;
+            dataList.innerHTML = '';
+            modelHistory.forEach(modelName => {
+                const option = document.createElement('option');
+                option.value = modelName;
+                dataList.appendChild(option);
+            });
+        }
+
+        function addModelToHistory(modelName) {
+            const normalized = (modelName || '').trim();
+            if (!normalized) return;
+            modelHistory = modelHistory.filter(item => item !== normalized);
+            modelHistory.unshift(normalized);
+            modelHistory = modelHistory.slice(0, 12);
+            saveModelHistory();
+            renderModelHistory();
+        }
+
         function createConversation() {
             const id = `conv_${Date.now()}`;
             const conversation = {
                 id,
                 title: '新对话',
-                mode: 'interactive',
+                mode: 'auto',
                 model: '',
                 messages: [],
                 translationPrefs: { ...DEFAULT_PREFS }
@@ -933,8 +1198,18 @@
                 const isActive = activeView === 'conversation' && conv.id === activeConversationId;
                 item.className = 'history-item' + (isActive ? ' active' : '');
                 item.innerHTML = `
-                    <div class="history-title">${conv.title}</div>
-                    <div class="history-meta">${modes[conv.mode]}</div>
+                    <div class="history-row">
+                        <div class="history-title">${conv.title}</div>
+                        <div class="history-actions">
+                            <button class="history-action-btn history-rename" title="重命名" aria-label="重命名">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="history-action-btn history-delete" title="删除" aria-label="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="history-meta">${HISTORY_LABEL}</div>
                 `;
                 item.addEventListener('click', () => {
                     activeConversationId = conv.id;
@@ -943,27 +1218,97 @@
                     renderHistory();
                     renderConversation();
                 });
+                const renameBtn = item.querySelector('.history-rename');
+                const deleteBtn = item.querySelector('.history-delete');
+                if (renameBtn) {
+                    renameBtn.addEventListener('click', event => {
+                        event.stopPropagation();
+                        beginRename(item, conv);
+                    });
+                }
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', event => {
+                        event.stopPropagation();
+                        deleteConversation(conv.id);
+                    });
+                }
                 historyList.appendChild(item);
             });
             reviewRecordsEntry.classList.toggle('active', activeView === 'reviewRecords');
         }
 
-        function renderConversation() {
+        function beginRename(item, conversation) {
+            const titleEl = item.querySelector('.history-title');
+            if (!titleEl) return;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = conversation.title || '';
+            input.className = 'history-title-input';
+            titleEl.replaceWith(input);
+            input.focus();
+            input.select();
+
+            const finish = commit => {
+                const nextTitle = commit ? input.value.trim() : conversation.title;
+                if (commit && nextTitle) {
+                    conversation.title = nextTitle;
+                }
+                saveState();
+                renderHistory();
+            };
+
+            input.addEventListener('click', event => event.stopPropagation());
+            input.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                    finish(true);
+                }
+                if (event.key === 'Escape') {
+                    finish(false);
+                }
+            });
+            input.addEventListener('blur', () => finish(true));
+        }
+
+        function deleteConversation(conversationId) {
+            const index = conversations.findIndex(conv => conv.id === conversationId);
+            if (index === -1) return;
+            if (!confirm('确认删除该对话？')) return;
+            const wasActive = activeConversationId === conversationId;
+            conversations.splice(index, 1);
+            if (!conversations.length) {
+                createConversation();
+                return;
+            }
+            if (wasActive) {
+                activeConversationId = conversations[0].id;
+            }
+            saveState();
+            renderHistory();
+            renderConversation();
+        }
+
+        function renderConversation(options = {}) {
             if (activeView === 'reviewRecords') {
                 renderReviewRecords();
                 return;
             }
+            const preserveScroll = options && options.preserveScroll;
+            const priorScrollTop = preserveScroll ? messagesEl.scrollTop : 0;
             const conversation = getActiveConversation();
             if (!conversation) return;
             ensureConversationDefaults(conversation);
-            modeSelect.value = conversation.mode;
             modelInput.value = conversation.model || '';
             messagesEl.innerHTML = '';
             conversation.messages.forEach(message => {
                 messagesEl.appendChild(renderMessage(message));
             });
-            renderInputPanel(conversation.mode);
-            messagesEl.scrollTop = messagesEl.scrollHeight;
+            renderInputPanel();
+            if (preserveScroll) {
+                const maxScroll = Math.max(0, messagesEl.scrollHeight - messagesEl.clientHeight);
+                messagesEl.scrollTop = Math.min(priorScrollTop, maxScroll);
+            } else {
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
         }
 
         function renderReviewRecords() {
@@ -1004,13 +1349,29 @@
             });
         }
 
+        function resolveCompareIndex(message) {
+            const history = Array.isArray(message.compareHistory) ? message.compareHistory : [];
+            if (!history.length) return -1;
+            let index = Number.isInteger(message.activeCompareIndex) ? message.activeCompareIndex : -1;
+            if (index < 0 || index >= history.length) {
+                const byModel = history.findIndex(item => item.model === message.model);
+                index = byModel >= 0 ? byModel : history.length - 1;
+            }
+            return index;
+        }
+
         function renderMessage(message) {
             const wrapper = document.createElement('div');
             wrapper.className = `message ${message.role}`;
 
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble';
-            const safeContent = normalizeQuotes(message.content || '');
+            const compareHistory = Array.isArray(message.compareHistory) ? message.compareHistory : [];
+            const compareIndex = resolveCompareIndex(message);
+            const displayEntry = compareIndex >= 0 ? compareHistory[compareIndex] : null;
+            const displayContent = displayEntry && displayEntry.output ? displayEntry.output : (message.content || '');
+            const displayModel = displayEntry && displayEntry.model ? displayEntry.model : (message.model || '未标注');
+            const safeContent = normalizeQuotes(displayContent);
             bubble.innerHTML = marked.parse(safeContent);
 
             wrapper.appendChild(bubble);
@@ -1020,12 +1381,48 @@
                 footer.className = 'message-footer';
                 const source = document.createElement('div');
                 source.className = 'message-source';
-                source.textContent = `模型：${message.model || '未标注'}`;
+                source.textContent = `模型：${displayModel}`;
                 footer.appendChild(source);
 
                 if (message.comparePayload) {
                     const actions = document.createElement('div');
                     actions.className = 'message-actions';
+
+                    if (compareHistory.length > 1) {
+                        const nav = document.createElement('div');
+                        nav.className = 'compare-nav';
+
+                        const prevBtn = document.createElement('button');
+                        prevBtn.className = 'compare-icon-btn';
+                        prevBtn.title = '上一个结果';
+                        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                        prevBtn.addEventListener('click', () => {
+                            const nextIndex = (resolveCompareIndex(message) - 1 + compareHistory.length) % compareHistory.length;
+                            message.activeCompareIndex = nextIndex;
+                            saveState();
+                            renderConversation({ preserveScroll: true });
+                        });
+                        nav.appendChild(prevBtn);
+
+                        const indexLabel = document.createElement('span');
+                        indexLabel.className = 'compare-index';
+                        indexLabel.textContent = `${compareIndex + 1}/${compareHistory.length}`;
+                        nav.appendChild(indexLabel);
+
+                        const nextBtn = document.createElement('button');
+                        nextBtn.className = 'compare-icon-btn';
+                        nextBtn.title = '下一个结果';
+                        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                        nextBtn.addEventListener('click', () => {
+                            const nextIndex = (resolveCompareIndex(message) + 1) % compareHistory.length;
+                            message.activeCompareIndex = nextIndex;
+                            saveState();
+                            renderConversation({ preserveScroll: true });
+                        });
+                        nav.appendChild(nextBtn);
+
+                        actions.appendChild(nav);
+                    }
 
                     const reviewButton = document.createElement('button');
                     reviewButton.className = 'compare-btn';
@@ -1039,10 +1436,12 @@
                     switchButton.addEventListener('click', () => openCompareModal(message));
                     actions.appendChild(switchButton);
 
-                    if (message.compareHistory && message.compareHistory.length > 1) {
+                    if (compareHistory.length > 1) {
                         const compareButton = document.createElement('button');
                         compareButton.className = 'compare-btn';
-                        compareButton.innerHTML = '<i class="fas fa-clone"></i> 对比';
+                        compareButton.innerHTML = message.compareExpanded
+                            ? '<i class="fas fa-clone"></i> 收起'
+                            : '<i class="fas fa-clone"></i> 全部显示';
                         compareButton.addEventListener('click', () => toggleCompareView(message));
                         actions.appendChild(compareButton);
                     }
@@ -1052,10 +1451,10 @@
 
                 wrapper.appendChild(footer);
 
-                if (message.compareHistory && message.compareHistory.length > 1 && message.compareExpanded) {
+                if (compareHistory.length > 1 && message.compareExpanded) {
                     const compareInline = document.createElement('div');
                     compareInline.className = 'compare-inline';
-                    message.compareHistory.forEach(item => {
+                    compareHistory.forEach(item => {
                         const panel = document.createElement('div');
                         panel.className = 'compare-panel';
                         panel.innerHTML = `
@@ -1071,30 +1470,88 @@
             return wrapper;
         }
 
-        function renderInputPanel(mode) {
+        const BASE_INPUT_HEIGHT = 44;
+
+        function getChatInputMaxHeight() {
+            const chatArea = document.querySelector('.chat-area');
+            if (!chatArea) return 160;
+            return Math.max(BASE_INPUT_HEIGHT, Math.floor(chatArea.clientHeight * 0.25));
+        }
+
+        function adjustChatInputHeight(textarea) {
+            if (!textarea) return;
+            const maxHeight = getChatInputMaxHeight();
+            const baseHeight = BASE_INPUT_HEIGHT;
+            textarea.style.height = 'auto';
+            const scrollHeight = textarea.scrollHeight;
+            const nextHeight = Math.max(baseHeight, Math.min(scrollHeight, maxHeight));
+            textarea.style.height = `${nextHeight}px`;
+            textarea.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
+        }
+
+        function resetChatInputHeight(textarea) {
+            if (!textarea) return;
+            textarea.style.height = `${BASE_INPUT_HEIGHT}px`;
+            textarea.style.overflowY = 'hidden';
+        }
+
+        function renderInputPanel() {
             inputPanel.innerHTML = '';
             showStatus('', '');
-
-            if (mode === 'interactive') {
-                inputPanel.innerHTML = `
-                    <textarea id="chatInput" rows="4" placeholder="输入原文或翻译指令..."></textarea>
-                    <div class="input-actions">
-                        <button class="send-btn" id="sendBtn">发送</button>
+            inputPanel.innerHTML = `
+                <div class="input-toolbar">
+                    <div class="input-shell">
+                        <button class="file-btn" id="fileBtn" title="选择文档" aria-label="选择文档">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <textarea id="chatInput" rows="1" placeholder="请输入..."></textarea>
+                        <input type="file" id="docFile" accept=".txt,.doc,.docx" hidden />
+                        <button class="send-btn" id="sendBtn" title="发送" aria-label="发送">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
-                `;
-                document.getElementById('sendBtn').addEventListener('click', handleInteractiveSend);
+                </div>
+                <div class="file-chip" id="fileChip" style="display: none;">
+                    <span>已选择：<strong id="fileName"></strong></span>
+                    <button class="file-clear" id="fileClear" title="移除文件" aria-label="移除文件">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            const fileBtn = document.getElementById('fileBtn');
+            const fileInput = document.getElementById('docFile');
+            const fileChip = document.getElementById('fileChip');
+            const fileName = document.getElementById('fileName');
+            const fileClear = document.getElementById('fileClear');
+            const chatInput = document.getElementById('chatInput');
+
+            const updateFileChip = file => {
+                if (file) {
+                    fileName.textContent = file.name;
+                    fileChip.style.display = 'flex';
+                } else {
+                    fileName.textContent = '';
+                    fileChip.style.display = 'none';
+                }
+            };
+
+            fileBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => {
+                const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+                updateFileChip(file);
+            });
+            fileClear.addEventListener('click', () => {
+                fileInput.value = '';
+                updateFileChip(null);
+            });
+
+            if (chatInput) {
+                resetChatInputHeight(chatInput);
+                adjustChatInputHeight(chatInput);
+                chatInput.addEventListener('input', () => adjustChatInputHeight(chatInput));
             }
 
-            if (mode === 'document') {
-                inputPanel.innerHTML = `
-                    <input type="file" id="docFile" accept=".txt,.doc,.docx" />
-                    <textarea id="docNotes" rows="3" placeholder="补充说明（可选）"></textarea>
-                    <div class="input-actions">
-                        <button class="send-btn" id="sendDocBtn">上传翻译</button>
-                    </div>
-                `;
-                document.getElementById('sendDocBtn').addEventListener('click', handleDocumentSend);
-            }
+            document.getElementById('sendBtn').addEventListener('click', handleUnifiedSend);
         }
 
         function updateConversationTitle(conversation, text) {
@@ -1138,6 +1595,33 @@
             }, 1600);
         }
 
+        function playStatusSteps(steps, finalMessage, finalType) {
+            return new Promise(resolve => {
+                if (statusTimer) {
+                    clearInterval(statusTimer);
+                    statusTimer = null;
+                }
+                if (!steps || steps.length === 0) {
+                    stopStatusSequence(finalMessage, finalType);
+                    resolve();
+                    return;
+                }
+                let index = 0;
+                showStatus(steps[index], 'progress');
+                statusTimer = setInterval(() => {
+                    index += 1;
+                    if (index >= steps.length) {
+                        clearInterval(statusTimer);
+                        statusTimer = null;
+                        stopStatusSequence(finalMessage, finalType);
+                        resolve();
+                        return;
+                    }
+                    showStatus(steps[index], 'progress');
+                }, 900);
+            });
+        }
+
         function stopStatusSequence(message, type) {
             if (statusTimer) {
                 clearInterval(statusTimer);
@@ -1146,10 +1630,27 @@
             showStatus(message, type);
         }
 
-        async function handleInteractiveSend() {
+        async function handleUnifiedSend() {
+            const fileInput = document.getElementById('docFile');
+            const chatInput = document.getElementById('chatInput');
+            const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+            const draftNotes = chatInput ? chatInput.value.trim() : '';
+
+            if (file) {
+                openDocNotesModal(fileInput, draftNotes);
+                return;
+            }
+
+            const text = chatInput ? chatInput.value.trim() : '';
+            if (!text) {
+                showStatus('请输入文本或上传文档。', 'error');
+                return;
+            }
+            await handleInteractiveSend(text);
+        }
+
+        async function handleInteractiveSend(text) {
             const conversation = getActiveConversation();
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
             if (!text) return;
             const apiKey = localStorage.getItem(STORAGE_API_KEY) || '';
             if (!apiKey) {
@@ -1167,9 +1668,16 @@
 
             updateConversationTitle(conversation, text);
             appendMessage(conversation, { role: 'user', content: text });
-            input.value = '';
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.value = '';
+                resetChatInputHeight(input);
+            }
 
-            startStatusSequence(['正在解析需求', '正在生成译文', '正在润色表达']);
+            const compareFallback = compareContext && compareContext.comparePayload && compareContext.comparePayload.mode === 'review'
+                ? '正在译审'
+                : '正在翻译';
+            startStatusSequence([compareFallback]);
             try {
                 const response = await fetch('/translate', {
                     method: 'POST',
@@ -1206,18 +1714,37 @@
                     ],
                     compareExpanded: false
                 });
-                stopStatusSequence('完成', 'success');
+                const statusSteps = Array.isArray(result.status_steps) ? result.status_steps.filter(Boolean) : [];
+                if (statusSteps.length) {
+                    await playStatusSteps(statusSteps, '完成', 'success');
+                } else {
+                    stopStatusSequence('完成', 'success');
+                }
                 saveState();
             } catch (error) {
                 stopStatusSequence('请求失败，请重试。', 'error');
             }
         }
 
-        async function handleDocumentSend() {
+        function deriveTempPrefs(basePrefs, text) {
+            const prefs = { ...(basePrefs || DEFAULT_PREFS) };
+            if (!text) return prefs;
+            const languagePrefs = extractLanguagePrefs(text);
+            if (languagePrefs.sourceLang) {
+                prefs.sourceLang = languagePrefs.sourceLang;
+            }
+            if (languagePrefs.targetLang) {
+                prefs.targetLang = languagePrefs.targetLang;
+            }
+            const styleNotes = extractStyleNotes(text);
+            if (styleNotes) {
+                prefs.styleNotes = styleNotes;
+            }
+            return prefs;
+        }
+
+        async function handleDocumentSend(file, notes, fileInput) {
             const conversation = getActiveConversation();
-            const fileInput = document.getElementById('docFile');
-            const notesInput = document.getElementById('docNotes');
-            const file = fileInput.files[0];
             if (!file) {
                 showStatus('请先上传文档。', 'error');
                 return;
@@ -1232,12 +1759,17 @@
                 return;
             }
 
-            if (notesInput.value.trim()) {
-                updateConversationPrefs(conversation, notesInput.value.trim());
+            const noteText = notes || '';
+            const prefs = deriveTempPrefs(conversation.translationPrefs || { ...DEFAULT_PREFS }, noteText);
+            const userMessage = noteText ? `上传文档：${file.name}\n${noteText}` : `上传文档：${file.name}`;
+            updateConversationTitle(conversation, file.name);
+            appendMessage(conversation, { role: 'user', content: userMessage });
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.value = '';
+                resetChatInputHeight(chatInput);
             }
-            const prefs = conversation.translationPrefs || { ...DEFAULT_PREFS };
-            appendMessage(conversation, { role: 'user', content: `上传文档：${file.name}\n${notesInput.value.trim()}`.trim() });
-            startStatusSequence(['正在解析文档', '正在生成译文', '正在整理译文']);
+            startStatusSequence(['正在翻译']);
 
             const formData = new FormData();
             formData.append('file', file);
@@ -1246,8 +1778,8 @@
             formData.append('temperature', '1.0');
             formData.append('source_lang', prefs.sourceLang || 'auto');
             formData.append('target_lang', prefs.targetLang || '中文');
-            formData.append('system_prompt', notesInput.value || '');
-            formData.append('user_prompt', notesInput.value || '');
+            formData.append('system_prompt', noteText);
+            formData.append('user_prompt', noteText);
 
             try {
                 const response = await fetch('/upload', {
@@ -1267,8 +1799,53 @@
                 stopStatusSequence('完成', 'success');
             } catch (error) {
                 stopStatusSequence('上传失败，请重试。', 'error');
+            } finally {
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+                const fileChip = document.getElementById('fileChip');
+                const fileName = document.getElementById('fileName');
+                if (fileChip) {
+                    fileChip.style.display = 'none';
+                }
+                if (fileName) {
+                    fileName.textContent = '';
+                }
             }
         }
+
+        function openDocNotesModal(fileInput, draftText) {
+            pendingDocFileInput = fileInput || null;
+            if (docNotesInput) {
+                docNotesInput.value = draftText || '';
+            }
+            docNotesModal.style.display = 'flex';
+            setTimeout(() => {
+                if (docNotesInput) {
+                    docNotesInput.focus();
+                }
+            }, 0);
+        }
+
+        function closeDocNotesModal() {
+            docNotesModal.style.display = 'none';
+            pendingDocFileInput = null;
+        }
+
+        docNotesConfirm.addEventListener('click', async () => {
+            const fileInput = pendingDocFileInput || document.getElementById('docFile');
+            const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+            if (!file) {
+                closeDocNotesModal();
+                showStatus('请先选择文档。', 'error');
+                return;
+            }
+            const noteText = docNotesInput ? docNotesInput.value.trim() : '';
+            closeDocNotesModal();
+            await handleDocumentSend(file, noteText, fileInput);
+        });
+
+        docNotesCancel.addEventListener('click', closeDocNotesModal);
 
 
         function openApiModal() {
@@ -1296,7 +1873,7 @@
             apiKeyInput.value = '';
             apiKeyClear.disabled = true;
         });
-        apiKeySettings.addEventListener('click', openApiModal);
+        apiKeyEntry.addEventListener('click', openApiModal);
 
         function openCompareModal(message) {
             compareContext = message;
@@ -1337,9 +1914,10 @@
             }
 
             compareRun.disabled = true;
-            startStatusSequence(['正在生成对比结果', '正在替换当前结果']);
+            startStatusSequence(['正在翻译']);
             try {
                 let compareText = '';
+                let compareStatusSteps = [];
 
                 if (!compareContext.comparePayload) {
                     stopStatusSequence('无法对比：缺少上下文。', 'error');
@@ -1367,6 +1945,9 @@
                         return;
                     }
                     compareText = result.translation || '';
+                    if (Array.isArray(result.status_steps)) {
+                        compareStatusSteps = result.status_steps.filter(Boolean);
+                    }
                 }
 
                 if (compareContext.comparePayload.mode === 'review') {
@@ -1388,6 +1969,9 @@
                         return;
                     }
                     compareText = `评分：${result.score || 'N/A'}\n\n评估：\n${result.review || ''}\n\n建议：\n${result.suggestions || ''}`;
+                    if (Array.isArray(result.status_steps)) {
+                        compareStatusSteps = result.status_steps.filter(Boolean);
+                    }
                 }
 
                 if (!compareText) {
@@ -1410,15 +1994,21 @@
                 }
 
                 compareContext.compareHistory = history;
+                const nextIndex = history.findIndex(item => item.model === modelName);
+                compareContext.activeCompareIndex = nextIndex >= 0 ? nextIndex : history.length - 1;
                 compareContext.content = compareText;
                 compareContext.model = modelName;
                 compareContext.compareExpanded = false;
 
                 saveState();
-                renderConversation();
+                renderConversation({ preserveScroll: true });
                 compareModal.style.display = 'none';
                 compareContext = null;
-                stopStatusSequence('对比结果已更新。', 'success');
+                if (compareStatusSteps.length) {
+                    await playStatusSteps(compareStatusSteps, '对比结果已更新。', 'success');
+                } else {
+                    stopStatusSequence('对比结果已更新。', 'success');
+                }
             } catch (error) {
                 stopStatusSequence('对比失败，请重试。', 'error');
             } finally {
@@ -1457,7 +2047,7 @@
             }));
 
             reviewRun.disabled = true;
-            startStatusSequence(['正在组织译审材料', '正在生成译审报告']);
+            startStatusSequence(['正在译审']);
             try {
                 const response = await fetch('/review', {
                     method: 'POST',
@@ -1495,7 +2085,12 @@
                     report
                 });
                 saveState();
-                stopStatusSequence('译审完成', 'success');
+                const statusSteps = Array.isArray(result.status_steps) ? result.status_steps.filter(Boolean) : [];
+                if (statusSteps.length) {
+                    await playStatusSteps(statusSteps, '译审完成', 'success');
+                } else {
+                    stopStatusSequence('译审完成', 'success');
+                }
                 closeReviewModal();
             } catch (error) {
                 stopStatusSequence('译审失败，请重试。', 'error');
@@ -1507,24 +2102,33 @@
         function toggleCompareView(message) {
             message.compareExpanded = !message.compareExpanded;
             saveState();
-            renderConversation();
+            renderConversation({ preserveScroll: true });
         }
 
-        modeSelect.addEventListener('change', () => {
+        function commitModelInput() {
             const conversation = getActiveConversation();
             if (!conversation) return;
-            conversation.mode = modeSelect.value;
-            activeView = 'conversation';
+            const value = modelInput.value.trim();
+            conversation.model = value;
             saveState();
-            renderHistory();
-            renderInputPanel(conversation.mode);
-        });
+            addModelToHistory(value);
+        }
 
         modelInput.addEventListener('input', () => {
             const conversation = getActiveConversation();
             if (!conversation) return;
             conversation.model = modelInput.value.trim();
             saveState();
+        });
+
+        modelInput.addEventListener('change', commitModelInput);
+        modelInput.addEventListener('blur', commitModelInput);
+        modelInput.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                commitModelInput();
+                modelInput.blur();
+            }
         });
 
         newChatBtn.addEventListener('click', createConversation);
@@ -1540,19 +2144,84 @@
         });
 
         function initLoader() {
-            setTimeout(() => {
-                loader.style.display = 'none';
-                const storedKey = localStorage.getItem(STORAGE_API_KEY);
-                if (!storedKey) {
-                    openApiModal();
+            if (!loader || !loaderProgress) {
+                return { markAppReady: () => {} };
+            }
+
+            const assets = Array.from(document.querySelectorAll('link[rel="stylesheet"], script[src]'));
+            const totalSteps = assets.length + 1;
+            let loadedSteps = 0;
+            let finished = false;
+
+            const setProgress = value => {
+                const clamped = Math.min(1, Math.max(0, value));
+                const visual = Math.max(0.08, clamped);
+                loaderProgress.style.width = `${(visual * 100).toFixed(1)}%`;
+            };
+
+            const finishLoading = () => {
+                if (finished) return;
+                finished = true;
+                setProgress(1);
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    const storedKey = localStorage.getItem(STORAGE_API_KEY);
+                    if (!storedKey) {
+                        openApiModal();
+                    }
+                }, 150);
+            };
+
+            const markLoaded = () => {
+                loadedSteps = Math.min(loadedSteps + 1, totalSteps);
+                setProgress(loadedSteps / totalSteps);
+                if (loadedSteps >= totalSteps) {
+                    finishLoading();
                 }
-            }, 2000);
+            };
+
+            const assetLoaded = asset => {
+                const resourceLoaded = url => {
+                    if (!url || !window.performance || !performance.getEntriesByName) {
+                        return false;
+                    }
+                    return performance.getEntriesByName(url).length > 0;
+                };
+                if (asset.tagName === 'LINK') {
+                    return Boolean(asset.sheet) || resourceLoaded(asset.href);
+                }
+                if (asset.tagName === 'SCRIPT') {
+                    return asset.readyState === 'complete' || asset.readyState === 'loaded' || asset.dataset.loaded === 'true' || resourceLoaded(asset.src);
+                }
+                return false;
+            };
+
+            setProgress(0);
+            assets.forEach(asset => {
+                const markOnce = () => {
+                    if (asset.dataset.loaded === 'true') {
+                        return;
+                    }
+                    asset.dataset.loaded = 'true';
+                    markLoaded();
+                };
+                if (assetLoaded(asset)) {
+                    markOnce();
+                } else {
+                    asset.addEventListener('load', markOnce, { once: true });
+                    asset.addEventListener('error', markOnce, { once: true });
+                }
+            });
+
+            return { markAppReady: markLoaded };
         }
 
+        const loaderTracker = initLoader();
         loadState();
+        renderModelHistory();
         renderHistory();
         renderConversation();
-        initLoader();
+        loaderTracker.markAppReady();
     </script>
 </body>
 </html>

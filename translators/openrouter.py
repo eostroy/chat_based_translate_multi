@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Optional
+from typing import Optional, Union
 
 import requests
 
@@ -36,7 +36,8 @@ class OpenRouterTranslator(BaseTranslator):
         system_prompt: Optional[str] = None,
         user_prompt: Optional[str] = None,
         temperature: float = 1.0,
-    ) -> Optional[str]:
+        include_reasoning: bool = False,
+    ) -> Optional[Union[str, dict]]:
         try:
             if not self.api_key:
                 raise ValueError("OpenRouter API密钥不能为空")
@@ -65,6 +66,8 @@ class OpenRouterTranslator(BaseTranslator):
                 "presence_penalty": 0.0,
                 "max_tokens": 2000,
             }
+            if include_reasoning:
+                payload["include_reasoning"] = True
 
             response = requests.post(
                 f"{self.base_url}/chat/completions",
@@ -76,13 +79,30 @@ class OpenRouterTranslator(BaseTranslator):
             result = response.json()
 
             if "choices" in result and result["choices"]:
-                return result["choices"][0]["message"]["content"].strip()
+                message = result["choices"][0].get("message", {})
+                content = (message.get("content") or "").strip()
+                reasoning = message.get("reasoning") or message.get("reasoning_content")
+                if include_reasoning:
+                    return {"text": content, "reasoning": reasoning}
+                return content
 
             logger.error("OpenRouter 返回结果格式错误: %s", result)
             return None
         except requests.HTTPError as exc:
             status = exc.response.status_code if exc.response else "unknown"
             detail = exc.response.text if exc.response else "no response body"
+            if include_reasoning and detail and "reason" in detail.lower():
+                logger.warning("OpenRouter 推理字段不可用，回退为普通请求: %s", detail)
+                return self.translate(
+                    text,
+                    source_lang=source_lang,
+                    target_lang=target_lang,
+                    model=model,
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    temperature=temperature,
+                    include_reasoning=False,
+                )
             logger.error("OpenRouter 翻译出错: HTTP %s - %s", status, detail)
             return None
         except Exception as exc:

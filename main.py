@@ -86,6 +86,53 @@ def build_user_prompt(text: str, target_lang: str, extra_prompt: str) -> str:
         return f"请将以下内容翻译为{target_lang}。\n翻译要求：{extra}\n\n{text}"
     return ""
 
+def should_include_reasoning(model: str) -> bool:
+    if not model:
+        return False
+    normalized = model.lower()
+    hints = [
+        "o1",
+        "reasoner",
+        "reasoning",
+        "r1",
+        "deepseek-reasoner",
+        "qwq",
+        "think",
+    ]
+    return any(hint in normalized for hint in hints)
+
+def unpack_translation_result(result):
+    if isinstance(result, dict):
+        text = result.get("text") or result.get("content")
+        reasoning = result.get("reasoning") or ""
+        return text, reasoning
+    return result, ""
+
+def derive_status_steps(reasoning: str, fallback: str) -> list:
+    if not reasoning:
+        return []
+
+    sample = reasoning[:2000]
+    lower = sample.lower()
+    steps = []
+
+    def add_step(label):
+        if label not in steps:
+            steps.append(label)
+
+    if any(key in lower for key in ["analy", "解析", "理解", "summar", "interpret"]):
+        add_step("解析原文")
+    if any(key in lower for key in ["term", "术语", "专有名词"]):
+        add_step("对齐术语")
+    if any(key in lower for key in ["translate", "翻译", "译文", "render"]):
+        add_step("生成译文")
+    if any(key in lower for key in ["polish", "refine", "润色", "调整", "流畅"]):
+        add_step("润色表达")
+    if any(key in lower for key in ["check", "verify", "校对", "一致", "consisten"]):
+        add_step("一致性检查")
+
+    return steps[:4] or [fallback]
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -130,18 +177,21 @@ async def process_translation(file_path: str, api_type: str, api_key: str, model
         system_prompt_value = build_system_prompt(source_lang, target_lang, system_prompt)
         extra_user_prompt = (user_prompt or "").strip()
         
+        include_reasoning = should_include_reasoning(model)
         for i, (prev_text, current_text) in enumerate(chunks):
             logger.info(f"正在翻译第 {i+1}/{len(chunks)} 块...")
             user_prompt_value = build_user_prompt(current_text, target_lang, extra_user_prompt)
-            translated_chunk = translator.translate(
+            translated_result = translator.translate(
                 current_text, 
                 source_lang=source_lang, 
                 target_lang=target_lang,
                 model=model,
                 system_prompt=system_prompt_value if system_prompt_value else None,
                 user_prompt=user_prompt_value if user_prompt_value else None,
-                temperature=temperature
+                temperature=temperature,
+                include_reasoning=include_reasoning
             )
+            translated_chunk, _ = unpack_translation_result(translated_result)
             
             if translated_chunk:
                 translated_chunks.append(translated_chunk)
@@ -150,15 +200,17 @@ async def process_translation(file_path: str, api_type: str, api_key: str, model
                 logger.warning(f"块 {i+1} 翻译失败，将重试...")
                 # 重试一次
                 await asyncio.sleep(2)
-                translated_chunk = translator.translate(
+                translated_result = translator.translate(
                     current_text, 
                     source_lang=source_lang, 
                     target_lang=target_lang,
                     model=model,
                     system_prompt=system_prompt_value if system_prompt_value else None,
                     user_prompt=user_prompt_value if user_prompt_value else None,
-                    temperature=temperature
+                    temperature=temperature,
+                    include_reasoning=include_reasoning
                 )
+                translated_chunk, _ = unpack_translation_result(translated_result)
                 
                 if translated_chunk:
                     translated_chunks.append(translated_chunk)
@@ -314,20 +366,25 @@ async def interactive_translate():
         translator = create_translator(api_type, api_key)
         
         # 执行翻译
-        translated_text = translator.translate(
+        include_reasoning = should_include_reasoning(model)
+        translated_result = translator.translate(
             user_message, 
             source_lang=source_lang, 
             target_lang=target_lang,
             model=model,
             system_prompt=system_prompt if system_prompt else None,
             user_prompt=None,  # 在交互模式中，用户消息直接作为内容
-            temperature=temperature
+            temperature=temperature,
+            include_reasoning=include_reasoning
         )
+        translated_text, reasoning = unpack_translation_result(translated_result)
+        status_steps = derive_status_steps(reasoning, "正在翻译")
         
         if translated_text:
             return jsonify({
                 'success': True,
-                'translation': translated_text
+                'translation': translated_text,
+                'status_steps': status_steps
             })
         else:
             return jsonify({'error': '翻译失败'}), 500
@@ -422,18 +479,23 @@ async def perform_single_review(data, source_text, target_text, source_lang, tar
 评估：[详细评估内容]
 建议：[改进建议]"""
 
-        response = translator.translate(
+        include_reasoning = should_include_reasoning(model)
+        response_result = translator.translate(
             review_prompt,
             source_lang='中文',
             target_lang='中文',
             model=model,
             system_prompt="你是专业的翻译质量评审员，请客观评估译文质量。",
             user_prompt=review_prompt,
-            temperature=0.3
+            temperature=0.3,
+            include_reasoning=include_reasoning
         )
+        response, reasoning = unpack_translation_result(response_result)
+        status_steps = derive_status_steps(reasoning, "正在译审")
 
         if not response:
-            return jsonify({'error': '译审失败'}), 500
+            logger.error("单模型译审失败：模型未返回结果，模型=%s，提示长度=%s", model, len(review_prompt))
+            return jsonify({'error': '译审失败：模型未返回结果，请检查 API Key、模型名称或配额。'}), 502
 
         # 解析响应
         score = 'N/A'
@@ -457,7 +519,8 @@ async def perform_single_review(data, source_text, target_text, source_lang, tar
             'success': True,
             'score': score,
             'review': review if review else response,
-            'suggestions': suggestions
+            'suggestions': suggestions,
+            'status_steps': status_steps
         })
 
     except Exception as e:
@@ -622,22 +685,29 @@ async def perform_multi_review(data, source_text, source_lang, target_lang):
 请给出综合结论、逐条评分与主要问题，并推荐最佳译文。"""
 
         translator = create_translator('openrouter', api_key)
-        response = translator.translate(
+        include_reasoning = should_include_reasoning(model)
+        response_result = translator.translate(
             review_prompt,
             source_lang='中文',
             target_lang='中文',
             model=model,
             system_prompt="你是专业的翻译质量评审员，请对比多个译文并给出客观结论。",
             user_prompt=review_prompt,
-            temperature=0.3
+            temperature=0.3,
+            include_reasoning=include_reasoning
         )
+        response, reasoning = unpack_translation_result(response_result)
+        status_steps = derive_status_steps(reasoning, "正在译审")
 
         if not response:
-            return jsonify({'error': '译审失败'}), 500
+            logger.error("多译文译审失败：模型未返回结果，模型=%s，提示长度=%s，候选数=%s",
+                         model, len(review_prompt), len(formatted_candidates))
+            return jsonify({'error': '译审失败：模型未返回结果，请检查 API Key、模型名称或配额。'}), 502
 
         return jsonify({
             'success': True,
-            'report': response
+            'report': response,
+            'status_steps': status_steps
         })
 
     except Exception as e:
