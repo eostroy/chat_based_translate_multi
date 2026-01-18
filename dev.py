@@ -87,13 +87,14 @@ def start_server():
             use_reloader=True,
             threaded=True,
             extra_files=[  # 监控额外文件
-                'templates/index.html',
-                'translators/__init__.py',
-                'translators/base.py',
-                'translators/deepseek.py',
-                'translators/openai.py',
-                'translators/anthropic.py',
-                'translators/google.py',
+                'atp/web/templates/index.html',
+                'atp/translators/__init__.py',
+                'atp/translators/base.py',
+                'atp/translators/deepseek.py',
+                'atp/translators/openai.py',
+                'atp/translators/anthropic.py',
+                'atp/translators/google.py',
+                'atp/translators/openrouter.py',
             ]
         )
     except KeyboardInterrupt:

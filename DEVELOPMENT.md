@@ -55,15 +55,12 @@ ATP/
 ├── dev.py                  # 开发服务器启动脚本
 ├── start.bat               # Windows启动脚本
 ├── start.sh                # Linux/Mac启动脚本
-├── templates/
-│   └── index.html         # 前端页面
-├── translators/           # 翻译器模块
-│   ├── __init__.py
-│   ├── base.py
-│   ├── deepseek.py
-│   ├── openai.py
-│   ├── anthropic.py
-│   └── google.py
+├── atp/
+│   ├── web/
+│   │   └── templates/
+│   │       └── index.html # 前端页面
+│   ├── services/          # 文本处理与译审服务
+│   └── translators/       # 翻译器模块
 ├── uploads/               # 上传文件目录
 └── outputs/               # 输出文件目录
 ```
@@ -165,7 +162,7 @@ import pdb; pdb.set_trace()
 
 ## 📝 修改前端
 
-前端代码在 `templates/index.html`，包含：
+前端代码在 `atp/web/templates/index.html`，包含：
 - HTML结构
 - CSS样式（`<style>`标签内）
 - JavaScript逻辑（`<script>`标签内）

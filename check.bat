@@ -40,11 +40,11 @@ if not exist "main.py" (
     echo    [√] main.py存在
 )
 
-if not exist "templates\index.html" (
-    echo    [X] 找不到templates/index.html
+if not exist "atp\web\templates\index.html" (
+    echo    [X] 找不到atp/web/templates/index.html
     set "has_error=1"
 ) else (
-    echo    [√] templates/index.html存在
+    echo    [√] atp/web/templates/index.html存在
 )
 echo.
 

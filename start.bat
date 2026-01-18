@@ -23,7 +23,7 @@ if %errorlevel% neq 0 (
 
 echo [2/3] 清理缓存...
 if exist __pycache__ rmdir /s /q __pycache__
-if exist translators\__pycache__ rmdir /s /q translators\__pycache__
+if exist atp\translators\__pycache__ rmdir /s /q atp\translators\__pycache__
 
 echo [3/3] 启动应用程序...
 echo.
