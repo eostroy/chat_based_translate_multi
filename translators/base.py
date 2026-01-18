@@ -5,8 +5,9 @@ class BaseTranslator(ABC):
         self.api_key = api_key
         
     @abstractmethod
-    def translate(self, text, source_lang="英文", target_lang="中文", 
-                 model=None, system_prompt=None, user_prompt=None, temperature=1.0):
+    def translate(self, text, source_lang="英文", target_lang="中文",
+                 model=None, system_prompt=None, user_prompt=None, temperature=1.0,
+                 include_reasoning=False):
         """翻译文本的抽象方法"""
         pass
     
