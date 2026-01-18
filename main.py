@@ -34,6 +34,38 @@ app.config['JSON_AS_ASCII'] = False  # 允许JSON响应包含非ASCII字符
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['OUTPUT_FOLDER'], exist_ok=True)
 
+def detect_language(text: str) -> str:
+    if not text:
+        return "英文"
+
+    counts = {
+        "日文": 0,
+        "韩文": 0,
+        "中文": 0,
+        "俄文": 0,
+    }
+
+    for char in text:
+        code_point = ord(char)
+        if 0x3040 <= code_point <= 0x30FF or 0x31F0 <= code_point <= 0x31FF:
+            counts["日文"] += 1
+        elif 0xAC00 <= code_point <= 0xD7AF:
+            counts["韩文"] += 1
+        elif 0x4E00 <= code_point <= 0x9FFF:
+            counts["中文"] += 1
+        elif 0x0400 <= code_point <= 0x04FF:
+            counts["俄文"] += 1
+
+    if counts["日文"] > 0:
+        return "日文"
+    if counts["韩文"] > 0:
+        return "韩文"
+    if counts["中文"] > 0:
+        return "中文"
+    if counts["俄文"] > 0:
+        return "俄文"
+    return "英文"
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -58,6 +90,11 @@ async def process_translation(file_path: str, api_type: str, api_key: str, model
         if not text or len(text.strip()) == 0:
             logger.error("提取的文本内容为空")
             return {'error': '提取的文本内容为空，请检查文件是否有效'}
+
+        if source_lang == "auto":
+            detected_lang = detect_language(text)
+            logger.info(f"自动匹配源语言: {detected_lang}")
+            source_lang = detected_lang
             
         logger.info(f"文本提取完成，长度：{len(text)} 字符")
         
@@ -246,6 +283,10 @@ async def interactive_translate():
         source_lang = data.get('source_lang', '英文')
         target_lang = data.get('target_lang', '中文')
         system_prompt = data.get('system_prompt', '')
+
+        if source_lang == "auto":
+            source_lang = detect_language(user_message)
+            logger.info(f"自动匹配源语言: {source_lang}")
         
         logger.info(f"交互翻译请求: API类型: {api_type}, 模型: {model}, 温度: {temperature}")
         logger.info(f"源语言: {source_lang}, 目标语言: {target_lang}")
@@ -294,6 +335,10 @@ async def ai_review():
 
         if not source_text or not target_text:
             return jsonify({'error': '原文和译文不能为空'}), 400
+
+        if source_lang == "auto":
+            source_lang = detect_language(source_text)
+            logger.info(f"自动匹配源语言: {source_lang}")
 
         logger.info(f"AI译审请求: 模式: {mode}, 源语言: {source_lang}, 目标语言: {target_lang}")
 
