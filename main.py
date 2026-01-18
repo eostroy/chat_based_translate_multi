@@ -70,6 +70,22 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
+def build_system_prompt(source_lang: str, target_lang: str, extra_prompt: str) -> str:
+    base_prompt = (
+        f"你是一个专业翻译，擅长从{source_lang}到{target_lang}的翻译。"
+        "请保持原文的语气和风格，确保翻译准确、流畅。"
+    )
+    extra = (extra_prompt or "").strip()
+    if extra:
+        return f"{base_prompt}\n补充要求：{extra}"
+    return ""
+
+def build_user_prompt(text: str, target_lang: str, extra_prompt: str) -> str:
+    extra = (extra_prompt or "").strip()
+    if extra:
+        return f"请将以下内容翻译为{target_lang}。\n翻译要求：{extra}\n\n{text}"
+    return ""
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -111,16 +127,19 @@ async def process_translation(file_path: str, api_type: str, api_key: str, model
         # 翻译文本
         logger.info(f"开始翻译，共 {len(chunks)} 个块")
         translated_chunks = []
+        system_prompt_value = build_system_prompt(source_lang, target_lang, system_prompt)
+        extra_user_prompt = (user_prompt or "").strip()
         
         for i, (prev_text, current_text) in enumerate(chunks):
             logger.info(f"正在翻译第 {i+1}/{len(chunks)} 块...")
+            user_prompt_value = build_user_prompt(current_text, target_lang, extra_user_prompt)
             translated_chunk = translator.translate(
                 current_text, 
                 source_lang=source_lang, 
                 target_lang=target_lang,
                 model=model,
-                system_prompt=system_prompt if system_prompt else None,
-                user_prompt=user_prompt if user_prompt else None,
+                system_prompt=system_prompt_value if system_prompt_value else None,
+                user_prompt=user_prompt_value if user_prompt_value else None,
                 temperature=temperature
             )
             
@@ -136,8 +155,8 @@ async def process_translation(file_path: str, api_type: str, api_key: str, model
                     source_lang=source_lang, 
                     target_lang=target_lang,
                     model=model,
-                    system_prompt=system_prompt if system_prompt else None,
-                    user_prompt=user_prompt if user_prompt else None,
+                    system_prompt=system_prompt_value if system_prompt_value else None,
+                    user_prompt=user_prompt_value if user_prompt_value else None,
                     temperature=temperature
                 )
                 
@@ -333,8 +352,12 @@ async def ai_review():
         source_lang = data.get('source_lang', '英文')
         target_lang = data.get('target_lang', '中文')
 
-        if not source_text or not target_text:
-            return jsonify({'error': '原文和译文不能为空'}), 400
+        if mode == 'multi':
+            if not source_text:
+                return jsonify({'error': '原文不能为空'}), 400
+        else:
+            if not source_text or not target_text:
+                return jsonify({'error': '原文和译文不能为空'}), 400
 
         if source_lang == "auto":
             source_lang = detect_language(source_text)
@@ -354,6 +377,8 @@ async def ai_review():
             return await perform_two_stage_review(data, source_text, target_text, source_lang, target_lang)
         elif mode == 'meeting':
             return await perform_meeting_review(data, source_text, target_text, source_lang, target_lang)
+        elif mode == 'multi':
+            return await perform_multi_review(data, source_text, source_lang, target_lang)
         else:
             return jsonify({'error': f'不支持的模式: {mode}'}), 400
 
@@ -559,6 +584,64 @@ async def perform_dual_review(data, source_text, target_text, source_lang, targe
 
     except Exception as e:
         logger.error(f"双模型对比译审失败: {str(e)}")
+        return jsonify({'error': f'译审失败: {str(e)}'}), 500
+
+async def perform_multi_review(data, source_text, source_lang, target_lang):
+    """多译文对比译审"""
+    try:
+        config = data.get('config', {})
+        api_key = config.get('api_key', '')
+        model = config.get('model', '')
+        translations = data.get('translations', [])
+
+        if not api_key or not model:
+            return jsonify({'error': 'API密钥和模型不能为空'}), 400
+
+        if not translations:
+            return jsonify({'error': '译文候选不能为空'}), 400
+
+        formatted_candidates = []
+        for idx, item in enumerate(translations, start=1):
+            candidate_model = item.get('model') or f"候选{idx}"
+            candidate_text = (item.get('output') or '').strip()
+            if not candidate_text:
+                continue
+            formatted_candidates.append(f"【{candidate_model}】\n{candidate_text}")
+
+        if not formatted_candidates:
+            return jsonify({'error': '译文候选内容为空'}), 400
+
+        review_prompt = f"""请对以下同一原文的多个译文进行综合译审与对比分析。
+
+原文（{source_lang}）：
+{source_text}
+
+译文候选（{target_lang}）：
+{chr(10).join(formatted_candidates)}
+
+请给出综合结论、逐条评分与主要问题，并推荐最佳译文。"""
+
+        translator = create_translator('openrouter', api_key)
+        response = translator.translate(
+            review_prompt,
+            source_lang='中文',
+            target_lang='中文',
+            model=model,
+            system_prompt="你是专业的翻译质量评审员，请对比多个译文并给出客观结论。",
+            user_prompt=review_prompt,
+            temperature=0.3
+        )
+
+        if not response:
+            return jsonify({'error': '译审失败'}), 500
+
+        return jsonify({
+            'success': True,
+            'report': response
+        })
+
+    except Exception as e:
+        logger.error(f"多译文译审失败: {str(e)}")
         return jsonify({'error': f'译审失败: {str(e)}'}), 500
 
 async def perform_two_stage_review(data, source_text, target_text, source_lang, target_lang):
