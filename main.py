@@ -320,7 +320,7 @@ async def interactive_translate():
 
 @app.route('/review', methods=['POST'])
 async def ai_review():
-    """AI译审接口，支持单模型、双模型对比、双阶段协同、模型开会"""
+    """AI译审接口，支持单模型、双模型对比、双阶段协同、模型议会"""
     try:
         data = request.get_json()
 
@@ -339,6 +339,10 @@ async def ai_review():
         if source_lang == "auto":
             source_lang = detect_language(source_text)
             logger.info(f"自动匹配源语言: {source_lang}")
+
+        if target_lang == "auto":
+            target_lang = detect_language(target_text)
+            logger.info(f"自动匹配目标语言: {target_lang}")
 
         logger.info(f"AI译审请求: 模式: {mode}, 源语言: {source_lang}, 目标语言: {target_lang}")
 
@@ -667,12 +671,12 @@ Few-shot 示例（如果有）：
         return jsonify({'error': f'译审失败: {str(e)}'}), 500
 
 async def perform_meeting_review(data, source_text, target_text, source_lang, target_lang):
-    """模型开会译审 - 多专家民主表决"""
+    """模型议会译审 - 多专家民主表决"""
     try:
         experts = data.get('experts', [])
 
         if len(experts) < 3:
-            return jsonify({'error': '模型开会模式至少需要3个专家'}), 400
+            return jsonify({'error': '模型议会模式至少需要3个专家'}), 400
 
         # 收集每个专家的意见
         opinions = []
@@ -785,7 +789,7 @@ async def perform_meeting_review(data, source_text, target_text, source_lang, ta
         })
 
     except Exception as e:
-        logger.error(f"模型开会译审失败: {str(e)}")
+        logger.error(f"模型议会译审失败: {str(e)}")
         return jsonify({'error': f'译审失败: {str(e)}'}), 500
 
 if __name__ == '__main__':

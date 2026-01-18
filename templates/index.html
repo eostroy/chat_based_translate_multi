@@ -11,17 +11,21 @@
     
     <style>
         :root {
-            --primary-color: #10a37f;
-            --primary-hover: #0d8a6a;
-            --secondary-color: #f7f7f8;
-            --text-primary: #202123;
-            --text-secondary: #6e6e80;
-            --border-color: #e5e5e5;
-            --chat-user-bg: #10a37f;
+            --primary-color: #4b5563;
+            --primary-hover: #374151;
+            --secondary-color: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: rgba(148, 163, 184, 0.35);
+            --chat-user-bg: #4b5563;
             --chat-ai-bg: #ffffff;
-            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-            --glass-bg: rgba(255, 255, 255, 0.95);
-            --gradient-bg: radial-gradient(circle at top left, #f0fdf9, #fff);
+            --card-shadow: 0 18px 40px -24px rgba(15, 23, 42, 0.35), 0 12px 20px -12px rgba(15, 23, 42, 0.18);
+            --glass-bg: rgba(255, 255, 255, 0.78);
+            --gradient-bg: radial-gradient(circle at top left, rgba(248, 250, 252, 0.9), rgba(226, 232, 240, 0.6));
+            --sidebar-bg: rgba(15, 23, 42, 0.9);
+            --sidebar-border: rgba(148, 163, 184, 0.2);
+            --sidebar-text: #e2e8f0;
+            --sidebar-muted: rgba(226, 232, 240, 0.6);
         }
 
         * {
@@ -37,6 +41,18 @@
             line-height: 1.6;
             min-height: 100vh;
             padding-bottom: 40px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(248, 250, 252, 0.9), transparent 55%),
+                        radial-gradient(circle at 80% 0%, rgba(148, 163, 184, 0.18), transparent 40%),
+                        radial-gradient(circle at 80% 80%, rgba(203, 213, 225, 0.25), transparent 45%);
+            pointer-events: none;
+            z-index: -1;
         }
 
         /* --- 加载动画 (优化版) --- */
@@ -46,7 +62,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #f0fdf9 0%, #ffffff 50%, #f0fdf9 100%);
+            background: radial-gradient(circle at top, #f8fafc 0%, #e2e8f0 45%, #f1f5f9 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -55,21 +71,14 @@
             overflow: hidden;
         }
 
-        /* 粒子背景动画 */
         .loader-container::before {
             content: '';
             position: absolute;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(16, 163, 127, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: particleMove 20s linear infinite;
-            opacity: 0.6;
-        }
-
-        @keyframes particleMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(50px, 50px); }
+            background: radial-gradient(circle, rgba(148, 163, 184, 0.18) 1px, transparent 1px);
+            background-size: 80px 80px;
+            opacity: 0.4;
         }
 
         .loader-content {
@@ -79,84 +88,38 @@
             gap: 30px;
             position: relative;
             z-index: 1;
-            animation: contentFadeIn 0.8s ease-out;
         }
 
-        @keyframes contentFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        
-        .logo-svg {
-            width: 180px;
-            height: 180px;
-            filter: drop-shadow(0 10px 30px rgba(16, 163, 127, 0.2));
-            animation: logoFloat 3s ease-in-out infinite;
+        .loader-hero {
+            width: min(520px, 80vw);
+            padding: 24px 28px 18px;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 20px 50px -30px rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(18px);
         }
 
-        @keyframes logoFloat {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-            50% {
-                transform: translateY(-15px) rotate(5deg);
-            }
-        }
-
-        .greetings-container {
-            height: 50px;
-            position: relative;
-            width: 280px;
-            text-align: center;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-        
-        .greeting {
-            position: absolute;
+        .loader-hero svg {
             width: 100%;
-            font-size: 28px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #10a37f 0%, #0d8a6a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            opacity: 0;
-            transform: translateY(30px) scale(0.8);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            letter-spacing: 2px;
+            height: auto;
+            display: block;
         }
-        
-        @keyframes greetingAnimation {
-            0% {
-                opacity: 0;
-                transform: translateY(30px) scale(0.8);
-            }
-            15% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            85% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-30px) scale(0.8);
-            }
+
+        .loader-caption {
+            margin-top: 18px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            text-align: center;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
         }
 
         /* 加载进度条 */
         .loader-progress {
-            width: 200px;
-            height: 3px;
-            background: rgba(16, 163, 127, 0.1);
+            width: min(360px, 70vw);
+            height: 6px;
+            background: rgba(148, 163, 184, 0.3);
             border-radius: 10px;
             overflow: hidden;
             margin-top: 10px;
@@ -164,15 +127,20 @@
 
         .loader-progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #10a37f 0%, #0d8a6a 100%);
+            background: linear-gradient(90deg, #334155 0%, #64748b 55%, #94a3b8 100%);
             border-radius: 10px;
             width: 0%;
-            animation: progressLoad 2.5s ease-out forwards;
-            box-shadow: 0 0 10px rgba(16, 163, 127, 0.5);
+            animation: progressLoad 5s ease-in-out forwards;
+            box-shadow: 0 0 18px rgba(15, 23, 42, 0.35);
         }
 
         @keyframes progressLoad {
             0% { width: 0%; }
+            20% { width: 12%; }
+            38% { width: 30%; }
+            55% { width: 52%; }
+            72% { width: 68%; }
+            85% { width: 82%; }
             100% { width: 100%; }
         }
 
@@ -186,7 +154,7 @@
         h1 {
             font-size: 2.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #10a37f 0%, #0d8a6a 100%);
+            background: linear-gradient(135deg, #111827 0%, #6b7280 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
@@ -199,62 +167,106 @@
         }
 
         /* --- 入口卡片样式 --- */
-        .entry-container {
+        .app-shell {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: 280px 1fr;
+            min-height: calc(100vh - 40px);
             gap: 24px;
-            max-width: 1000px;
-            margin: 0 auto 50px;
-            padding: 0 20px;
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .sidebar {
+            background: var(--sidebar-bg);
+            border-radius: 24px;
+            padding: 24px;
+            color: var(--sidebar-text);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            border: 1px solid var(--sidebar-border);
+            box-shadow: 0 24px 45px -30px rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(18px);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .sidebar-brand {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+
+        .sidebar-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--sidebar-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .entry-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
         
         .entry-card {
-            background: var(--glass-bg);
-            border: 1px solid rgba(0,0,0,0.05);
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
+            background: rgba(15, 23, 42, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 18px 20px;
+            text-align: left;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: var(--card-shadow);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
             position: relative;
             overflow: hidden;
         }
         
         .entry-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            border-color: rgba(16, 163, 127, 0.3);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.22);
         }
         
         .entry-card.active {
-            border: 2px solid var(--primary-color);
-            background: #f0fdf9;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.12);
         }
 
         .entry-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-            background: #e6fffa;
-            width: 80px;
-            height: 80px;
-            line-height: 80px;
-            border-radius: 50%;
-            margin-left: auto;
-            margin-right: auto;
-            color: var(--primary-color);
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: var(--sidebar-text);
         }
         
         .entry-title {
-            font-size: 1.25rem;
+            font-size: 1rem;
             font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
+            color: var(--sidebar-text);
+            margin-bottom: 6px;
         }
         
         .entry-desc {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
+            font-size: 0.85rem;
+            color: var(--sidebar-muted);
         }
 
         /* --- 主容器与布局 --- */
@@ -281,13 +293,20 @@
             gap: 30px;
         }
 
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
         /* --- 通用面板样式 --- */
         .translation-section {
-            background: #ffffff;
+            background: var(--glass-bg);
             border-radius: 24px;
             padding: 30px;
             box-shadow: var(--card-shadow);
             border: 1px solid var(--border-color);
+            backdrop-filter: blur(16px);
         }
 
         .section-title {
@@ -326,7 +345,7 @@
         select, input[type="text"], input[type="password"], textarea {
             width: 100%;
             padding: 12px 16px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.45);
             border-radius: 12px;
             font-size: 0.95rem;
             font-family: inherit;
@@ -355,7 +374,7 @@
         select:focus, input:focus, textarea:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+            box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.25);
         }
 
         /* 自定义文件上传样式 */
@@ -442,13 +461,13 @@
             border: 1px solid var(--border-color);
             border-radius: 16px;
             overflow: hidden;
-            background: #fff;
+            background: rgba(255, 255, 255, 0.8);
         }
 
         /* 左侧设置栏 */
         .interactive-settings {
             width: 300px;
-            background: #f8fafc;
+            background: rgba(248, 250, 252, 0.9);
             border-right: 1px solid var(--border-color);
             padding: 20px;
             overflow-y: auto;
@@ -482,7 +501,7 @@
             z-index: 100;
             width: 24px;
             height: 48px;
-            background: #fff;
+            background: rgba(255, 255, 255, 0.9);
             border: 1px solid var(--border-color);
             border-left: none;
             border-radius: 0 8px 8px 0;
@@ -652,10 +671,12 @@
 
         .mode-switch {
             display: inline-flex;
-            background: #f1f5f9;
+            background: rgba(255, 255, 255, 0.7);
             border-radius: 12px;
             padding: 4px;
             gap: 4px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            backdrop-filter: blur(12px);
         }
 
         .mode-btn {
@@ -686,11 +707,11 @@
 
         /* --- 配置区域 --- */
         .config-area {
-            background: #f8fafc;
+            background: rgba(248, 250, 252, 0.85);
             border-radius: 16px;
             padding: 24px;
             margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.35);
         }
 
         .config-row {
@@ -709,8 +730,8 @@
         }
 
         .model-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.4);
             border-radius: 12px;
             padding: 20px;
             position: relative;
@@ -752,8 +773,8 @@
         .add-model-btn {
             width: 100%;
             padding: 12px;
-            background: #fff;
-            border: 2px dashed #cbd5e1;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px dashed rgba(148, 163, 184, 0.5);
             border-radius: 12px;
             color: var(--text-secondary);
             font-weight: 500;
@@ -777,8 +798,8 @@
         }
 
         .shared-config {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 12px;
             padding: 20px;
             margin-top: 16px;
@@ -786,8 +807,8 @@
 
         /* --- 输入区域 --- */
         .input-area {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 20px;
@@ -806,8 +827,8 @@
 
         /* --- 结果展示区域 --- */
         .results-area {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 16px;
             padding: 20px;
         }
@@ -857,8 +878,8 @@
         }
 
         .result-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: rgba(248, 250, 252, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 12px;
             padding: 16px;
             transition: all 0.2s;
@@ -932,7 +953,7 @@
         }
 
         .compare-modal-content {
-            background: #fff;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             width: 90%;
             max-width: 1400px;
@@ -991,8 +1012,8 @@
         }
 
         .compare-item {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: rgba(248, 250, 252, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 12px;
             padding: 16px;
         }
@@ -1016,8 +1037,8 @@
 
         /* --- AI译审页面样式 --- */
         .review-input-area {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 20px;
@@ -1034,8 +1055,8 @@
         }
 
         .review-config-area {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: rgba(248, 250, 252, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 20px;
@@ -1048,8 +1069,8 @@
         }
 
         .stage-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 12px;
             padding: 16px;
         }
@@ -1068,8 +1089,8 @@
         }
 
         .prompt-engineering-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 12px;
             padding: 16px;
             margin-top: 16px;
@@ -1113,8 +1134,8 @@
         }
 
         .dual-model-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 12px;
             padding: 16px;
         }
@@ -1138,8 +1159,8 @@
         }
 
         .expert-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 12px;
             padding: 16px;
         }
@@ -1177,8 +1198,8 @@
         }
 
         .review-result-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: rgba(248, 250, 252, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 16px;
@@ -1229,8 +1250,8 @@
         }
 
         .review-section-content {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 8px;
             padding: 12px;
             line-height: 1.6;
@@ -1278,8 +1299,8 @@
         }
 
         .timeline-content {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 10px;
             padding: 14px;
             margin-bottom: 8px;
@@ -1301,8 +1322,8 @@
         }
 
         .final-consensus-card {
-            background: linear-gradient(135deg, #f0fdf9 0%, #dcfce7 100%);
-            border: 2px solid var(--primary-color);
+            background: linear-gradient(135deg, rgba(226, 232, 240, 0.8) 0%, rgba(241, 245, 249, 0.95) 100%);
+            border: 2px solid rgba(75, 85, 99, 0.6);
             border-radius: 12px;
             padding: 20px;
             margin-top: 24px;
@@ -1319,7 +1340,7 @@
         }
 
         .consensus-content {
-            background: #fff;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 8px;
             padding: 14px;
             line-height: 1.6;
@@ -1327,6 +1348,8 @@
 
         /* --- 响应式 --- */
         @media (max-width: 768px) {
+            .app-shell { grid-template-columns: 1fr; }
+            .sidebar { position: relative; }
             .container { grid-template-columns: 1fr; }
             .config-row { grid-template-columns: 1fr; }
             .compare-grid { grid-template-columns: 1fr; }
@@ -1335,32 +1358,58 @@
             .dual-comparison-grid { grid-template-columns: 1fr; }
             .expert-config-grid { grid-template-columns: 1fr; }
         }
+
+        .sidebar-collapsed .app-shell {
+            grid-template-columns: 80px 1fr;
+        }
+
+        .sidebar-collapsed .entry-title,
+        .sidebar-collapsed .entry-desc,
+        .sidebar-collapsed .sidebar-brand {
+            display: none;
+        }
+
+        .sidebar-collapsed .entry-card {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="loader-container" id="loader">
         <div class="loader-content">
-            <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#10a37f;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#0d8a6a;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <circle cx="100" cy="100" r="40" fill="none" stroke="url(#logoGradient)" stroke-width="4">
-                    <animate attributeName="r" from="40" to="50" dur="1.5s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" from="1" to="0" dur="1.5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="100" cy="100" r="30" fill="url(#logoGradient)" opacity="0.8">
-                    <animate attributeName="r" values="28;32;28" dur="2s" repeatCount="indefinite" />
-                </circle>
-            </svg>
-            <div class="greetings-container">
-                <div class="greeting" data-lang="中文">你好</div>
-                <div class="greeting" data-lang="英文">Hello</div>
-                <div class="greeting" data-lang="日文">こんにちは</div>
-                <div class="greeting" data-lang="韩文">안녕하세요</div>
-                <div class="greeting" data-lang="法文">Bonjour</div>
+            <div class="loader-hero">
+                <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg" aria-label="ATP intro art">
+                    <defs>
+                        <linearGradient id="stoneWarm" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#9a7a5b"/>
+                            <stop offset="100%" stop-color="#c4a484"/>
+                        </linearGradient>
+                        <linearGradient id="stoneCool" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#8b95a5"/>
+                            <stop offset="100%" stop-color="#c2c8d2"/>
+                        </linearGradient>
+                        <linearGradient id="logoText" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#8b95a5"/>
+                            <stop offset="100%" stop-color="#a68869"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="800" height="320" fill="transparent"/>
+                    <g transform="translate(60,30)">
+                        <polygon points="60,230 90,190 120,235 90,260" fill="url(#stoneCool)"/>
+                        <polygon points="95,160 140,130 170,190 125,210" fill="url(#stoneCool)"/>
+                        <polygon points="30,130 70,95 110,140 70,175" fill="url(#stoneCool)"/>
+                        <polygon points="120,85 155,60 185,115 150,135" fill="url(#stoneWarm)"/>
+                        <polygon points="55,70 85,40 120,80 90,105" fill="url(#stoneCool)"/>
+                        <polygon points="85,20 115,-5 145,30 115,55" fill="url(#stoneWarm)"/>
+                        <polygon points="30,210 60,175 85,220 55,245" fill="url(#stoneCool)"/>
+                        <polygon points="140,200 175,165 205,215 170,245" fill="url(#stoneWarm)"/>
+                    </g>
+                    <g transform="translate(340,70)">
+                        <text x="0" y="150" font-size="140" font-weight="700" font-family="Inter, sans-serif" fill="url(#logoText)" letter-spacing="8">ATP</text>
+                        <text x="8" y="190" font-size="24" font-family="Inter, sans-serif" fill="#6b7280" letter-spacing="6">AI TRANSLATION PLATFORM</text>
+                    </g>
+                </svg>
+                <div class="loader-caption">Loading Interface</div>
             </div>
             <div class="loader-progress">
                 <div class="loader-progress-bar"></div>
@@ -1368,28 +1417,37 @@
         </div>
     </div>
 
-    <header>
-        <h1>ATP</h1>
-        <div class="subtitle">AI-driven Translation Platform</div>
-    </header>
-    
-    <div class="entry-container" id="entryContainer" style="display: none; opacity: 0; transition: opacity 0.5s;">
-        <div class="entry-card" data-page="interactive">
-            <div class="entry-icon"><i class="fas fa-comments"></i></div>
-            <div class="entry-title">交互翻译</div>
-            <div class="entry-desc">实时多模型对话式翻译与润色</div>
-        </div>
-        <div class="entry-card" data-page="ai-translation">
-            <div class="entry-icon"><i class="fas fa-file-alt"></i></div>
-            <div class="entry-title">文档翻译</div>
-            <div class="entry-desc">支持 Word/TXT 文档长文本处理</div>
-        </div>
-        <div class="entry-card" data-page="ai-review">
-            <div class="entry-icon"><i class="fas fa-check-double"></i></div>
-            <div class="entry-title">AI 译审</div>
-            <div class="entry-desc">智能化翻译质量审核与改进</div>
-        </div>
-    </div>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">ATP</div>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="切换侧边栏">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="entry-container" id="entryContainer" style="display: none; opacity: 0; transition: opacity 0.5s;">
+                <div class="entry-card" data-page="interactive">
+                    <div class="entry-icon"><i class="fas fa-comments"></i></div>
+                    <div class="entry-title">交互翻译</div>
+                    <div class="entry-desc">实时多模型对话式翻译与润色</div>
+                </div>
+                <div class="entry-card" data-page="ai-translation">
+                    <div class="entry-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="entry-title">文档翻译</div>
+                    <div class="entry-desc">支持 Word/TXT 文档长文本处理</div>
+                </div>
+                <div class="entry-card" data-page="ai-review">
+                    <div class="entry-icon"><i class="fas fa-check-double"></i></div>
+                    <div class="entry-title">AI 译审</div>
+                    <div class="entry-desc">智能化翻译质量审核与改进</div>
+                </div>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header>
+                <h1>ATP</h1>
+                <div class="subtitle">AI-driven Translation Platform</div>
+            </header>
 
     <div class="page-area" id="interactivePage">
         <div class="translation-section" style="max-width: 1200px; margin: 0 auto;">
@@ -1414,11 +1472,11 @@
                     <div class="config-row">
                         <div class="form-group">
                             <label><i class="fas fa-key"></i> API密钥</label>
-                            <input type="password" id="single_api_key" required placeholder="sk-...">
+                            <input type="password" id="single_api_key" required placeholder="sk-..." data-shared="api_key">
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-robot"></i> 模型名称（OpenRouter）</label>
-                            <input type="text" id="single_model" required placeholder="例如：openai/gpt-4o">
+                            <input type="text" id="single_model" required placeholder="例如：openai/gpt-4o" data-shared="model">
                         </div>
                     </div>
                     <div class="config-row">
@@ -1543,12 +1601,12 @@
                     
                     <div class="form-group">
                         <label>API密钥</label>
-                        <input type="password" id="api_key1" name="api_key" required placeholder="输入您的 API Key">
+                        <input type="password" id="api_key1" name="api_key" required placeholder="输入您的 API Key" data-shared="api_key">
                     </div>
                     
                     <div class="form-group">
                         <label>模型名称（OpenRouter）</label>
-                        <input type="text" id="model1" name="model" required placeholder="例如：openai/gpt-4o">
+                        <input type="text" id="model1" name="model" required placeholder="例如：openai/gpt-4o" data-shared="model">
                     </div>
                     
                     <div class="form-group">
@@ -1602,11 +1660,11 @@
                     </div>
                     <div class="form-group">
                         <label>API密钥</label>
-                        <input type="password" id="api_key2" name="api_key" required placeholder="输入您的 API Key">
+                        <input type="password" id="api_key2" name="api_key" required placeholder="输入您的 API Key" data-shared="api_key">
                     </div>
                     <div class="form-group">
                         <label>模型名称（OpenRouter）</label>
-                        <input type="text" id="model2" name="model" required placeholder="例如：openai/gpt-4o">
+                        <input type="text" id="model2" name="model" required placeholder="例如：openai/gpt-4o" data-shared="model">
                     </div>
                     <div class="form-group">
                         <label>温度: <span id="temperature-value2">1.0</span></label>
@@ -1665,7 +1723,7 @@
                         <i class="fas fa-layer-group"></i> 双阶段协同
                     </button>
                     <button class="mode-btn" data-review-mode="meeting">
-                        <i class="fas fa-users"></i> 模型开会
+                        <i class="fas fa-users"></i> 模型议会
                     </button>
                 </div>
             </div>
@@ -1694,6 +1752,7 @@
                     <div class="form-group select-wrapper">
                         <label>目标语言</label>
                         <select id="review_target_lang">
+                            <option value="auto">自动匹配语言</option>
                             <option value="中文">中文</option>
                             <option value="英文">英文</option>
                             <option value="日文">日文</option>
@@ -1709,11 +1768,11 @@
                 <div class="config-row">
                     <div class="form-group">
                         <label><i class="fas fa-key"></i> API密钥</label>
-                        <input type="password" id="review_single_api_key" placeholder="sk-...">
+                        <input type="password" id="review_single_api_key" placeholder="sk-..." data-shared="api_key">
                     </div>
                     <div class="form-group">
                         <label><i class="fas fa-robot"></i> 模型名称（OpenRouter）</label>
-                        <input type="text" id="review_single_model" placeholder="例如：openai/gpt-4o">
+                        <input type="text" id="review_single_model" placeholder="例如：openai/gpt-4o" data-shared="model">
                     </div>
                 </div>
             </div>
@@ -1729,11 +1788,11 @@
                         </div>
                         <div class="form-group">
                             <label>API密钥</label>
-                            <input type="password" id="review_dual_api_key1" placeholder="sk-...">
+                            <input type="password" id="review_dual_api_key1" placeholder="sk-..." data-shared="api_key">
                         </div>
                         <div class="form-group">
                             <label>模型名称（OpenRouter）</label>
-                            <input type="text" id="review_dual_model1" placeholder="例如：openai/gpt-4o">
+                            <input type="text" id="review_dual_model1" placeholder="例如：openai/gpt-4o" data-shared="model">
                         </div>
                     </div>
                     <!-- 模型2 -->
@@ -1743,11 +1802,11 @@
                         </div>
                         <div class="form-group">
                             <label>API密钥</label>
-                            <input type="password" id="review_dual_api_key2" placeholder="sk-...">
+                            <input type="password" id="review_dual_api_key2" placeholder="sk-..." data-shared="api_key">
                         </div>
                         <div class="form-group">
                             <label>模型名称（OpenRouter）</label>
-                            <input type="text" id="review_dual_model2" placeholder="例如：openai/gpt-4o">
+                            <input type="text" id="review_dual_model2" placeholder="例如：openai/gpt-4o" data-shared="model">
                         </div>
                     </div>
                 </div>
@@ -1846,7 +1905,7 @@
                 </div>
             </div>
 
-            <!-- 模型开会配置 -->
+            <!-- 模型议会配置 -->
             <div class="review-config-area" id="meetingReviewConfig" style="display: none;">
                 <h3 class="config-section-title"><i class="fas fa-users-cog"></i> 专家团队配置（至少3个）</h3>
                 <div class="meeting-models-container" id="meetingModelsContainer">
@@ -1876,6 +1935,9 @@
         </div>
     </div>
 
+        </main>
+    </div>
+
     <script>
         // 页面加载完成后显示入口选择，隐藏加载动画
         const startEntryIntro = () => {
@@ -1886,24 +1948,13 @@
             }
 
             entryContainer.dataset.ready = 'true';
-
-            // 设置问候语动画
-            const greetings = document.querySelectorAll('.greeting');
-            const animationDuration = 3000; // 增加总时长使动画更流畅
-            const segmentDuration = greetings.length ? animationDuration / greetings.length : animationDuration;
-            
-            greetings.forEach((greeting, index) => {
-                greeting.style.animation = `greetingAnimation ${segmentDuration}ms cubic-bezier(0.4, 0, 0.2, 1) forwards`;
-                greeting.style.animationDelay = `${index * segmentDuration}ms`;
-            });
-            
-            // 延迟显示入口选择，让动画完整播放
+            // 固定展示 5 秒
             setTimeout(() => {
                 loader.style.opacity = '0';
                 setTimeout(() => {
                     loader.style.display = 'none';
                     // 显示入口选择并添加淡入动画
-                    entryContainer.style.display = 'grid';
+                    entryContainer.style.display = 'flex';
                     // 强制重绘以触发 transition
                     entryContainer.offsetHeight; 
                     entryContainer.style.opacity = '1';
@@ -1912,7 +1963,7 @@
                     const cards = entryContainer.querySelectorAll('.entry-card');
                     cards.forEach((card, index) => {
                         card.style.opacity = '0';
-                        card.style.transform = 'translateY(20px)';
+                        card.style.transform = 'translateY(12px)';
                         setTimeout(() => {
                             card.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
                             card.style.opacity = '1';
@@ -1920,7 +1971,7 @@
                         }, index * 100);
                     });
                 }, 800);
-            }, 3000);
+            }, 5000);
         };
 
         document.addEventListener('DOMContentLoaded', startEntryIntro);
@@ -1934,6 +1985,19 @@
                 showPage(pageId);
             });
         });
+
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        if (sidebarToggle) {
+            const storedSidebar = localStorage.getItem('sidebarCollapsed');
+            if (storedSidebar === 'true') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+
+            sidebarToggle.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('sidebarCollapsed', document.body.classList.contains('sidebar-collapsed'));
+            });
+        }
         
         // 显示页面函数
         function showPage(pageId) {
@@ -1971,6 +2035,48 @@
                 }
             });
         }
+
+        function bindSharedInputs(root = document) {
+            const sharedKeyMap = {
+                api_key: 'sharedApiKey',
+                model: 'sharedModel'
+            };
+
+            const inputs = root.querySelectorAll('[data-shared]');
+            inputs.forEach(input => {
+                if (input.dataset.sharedBound === 'true') {
+                    return;
+                }
+                input.dataset.sharedBound = 'true';
+                const storageKey = sharedKeyMap[input.dataset.shared];
+                if (storageKey && !input.value) {
+                    const storedValue = localStorage.getItem(storageKey);
+                    if (storedValue) {
+                        input.value = storedValue;
+                    }
+                }
+
+                const syncShared = () => {
+                    const value = input.value.trim();
+                    if (!value) {
+                        return;
+                    }
+                    localStorage.setItem(storageKey, value);
+                    document.querySelectorAll(`[data-shared="${input.dataset.shared}"]`).forEach(other => {
+                        if (other !== input && !other.value) {
+                            other.value = value;
+                        }
+                    });
+                };
+
+                input.addEventListener('input', syncShared);
+                input.addEventListener('change', syncShared);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            bindSharedInputs();
+        });
 
         // 处理表单提交的函数 (保持原逻辑)
         function handleSubmit(formId, statusId, progressId, downloadSectionId) {
@@ -2120,13 +2226,13 @@
                     <div class="config-row">
                         <div class="form-group">
                             <label><i class="fas fa-key"></i> API密钥</label>
-                            <input type="password" id="${cardId}_api_key" required placeholder="sk-...">
+                            <input type="password" id="${cardId}_api_key" required placeholder="sk-..." data-shared="api_key">
                         </div>
                     </div>
                     <div class="config-row">
                         <div class="form-group">
                             <label><i class="fas fa-robot"></i> 模型名称（OpenRouter）</label>
-                            <input type="text" id="${cardId}_model" required placeholder="例如：openai/gpt-4o">
+                            <input type="text" id="${cardId}_model" required placeholder="例如：openai/gpt-4o" data-shared="model">
                         </div>
                         <div class="form-group">
                             <label>温度: <span id="${cardId}_temp_value">1.0</span></label>
@@ -2139,6 +2245,7 @@
                 `;
 
                 modelsContainer.appendChild(modelCard);
+                bindSharedInputs(modelCard);
 
                 // 设置温度滑块
                 setupSlider(`${cardId}_temperature`, `${cardId}_temp_value`);
@@ -2483,16 +2590,17 @@
                     <div class="expert-config-grid">
                         <div class="form-group">
                             <label>API密钥</label>
-                            <input type="password" id="${cardId}_api_key" placeholder="sk-...">
+                            <input type="password" id="${cardId}_api_key" placeholder="sk-..." data-shared="api_key">
                         </div>
                         <div class="form-group">
                             <label>模型名称（OpenRouter）</label>
-                            <input type="text" id="${cardId}_model" placeholder="例如：openai/gpt-4o">
+                            <input type="text" id="${cardId}_model" placeholder="例如：openai/gpt-4o" data-shared="model">
                         </div>
                     </div>
                 `;
 
                 meetingModelsContainer.appendChild(expertCard);
+                bindSharedInputs(expertCard);
             }
 
             window.removeExpertCard = function(cardId) {
@@ -2821,11 +2929,11 @@
                 `;
             }
 
-            // 模型开会
+            // 模型议会
             async function performMeetingReview(sourceText, targetText, sourceLang, targetLang) {
                 const expertCards = document.querySelectorAll('.expert-card');
                 if (expertCards.length < 3) {
-                    alert('模型开会模式至少需要3个专家');
+                    alert('模型议会模式至少需要3个专家');
                     return;
                 }
 
